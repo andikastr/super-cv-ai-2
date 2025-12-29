@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiIntegrationService } from './ai-integration.service';
 import { CvStatus } from '@prisma/client';
+import * as fs from 'fs'; // <--- Import fs
 
 @Processor('cv_queue')
 export class CvProcessor extends WorkerHost {
@@ -17,36 +18,38 @@ export class CvProcessor extends WorkerHost {
   }
 
   async process(job: Job<any, any, string>): Promise<any> {
-    const { cvId, fileKey, jobContext } = job.data;
+    const { cvId, filePath, jobContext } = job.data;
     this.logger.log(`Processing Job ${job.id} for CV: ${cvId}`);
 
     try {
-     
       await this.prisma.cV.update({
         where: { id: cvId },
         data: { status: CvStatus.PROCESSING },
       });
 
-  
-      const mockBuffer = Buffer.from("%PDF-1.4 ... (Real PDF Content Here)"); 
+      // --- THE FIX: Read the Real File ---
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found at: ${filePath}`);
+      }
+      const fileBuffer = fs.readFileSync(filePath);
+      // ----------------------------------
 
-      
+      // Send Real PDF to AI
       const aiResult = await this.aiService.analyzeCv(
-        mockBuffer, 
+        fileBuffer, 
         'resume.pdf', 
         jobContext
       );
 
-      
       await this.prisma.cV.update({
         where: { id: cvId },
         data: {
           status: CvStatus.COMPLETED,
-          analysisResult: aiResult, 
+          analysisResult: aiResult,
         },
       });
 
-      this.logger.log(`Job ${job.id} Analysis Completed.`);
+      this.logger.log(`Job ${job.id} Completed Successfully`);
     } catch (error) {
       this.logger.error(`Job ${job.id} Failed: ${error.message}`);
       
