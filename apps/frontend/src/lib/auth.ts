@@ -33,17 +33,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      // This logic runs on Login
       if (user) {
-        // Default to the Provider ID (Google ID) initially
-        token.id = user.id;
-
-        // Try to Sync with Database to get Real UUID
+        token.id = user.id; // Default ID
+        
+        // If Google Login, Sync to get real DB UUID
         if (account?.provider === "google") {
           try {
              const backendUrl = "http://127.0.0.1:3001";
-             console.log("SYNC: Attempting to sync user:", user.email);
-             
              const res = await fetch(`${backendUrl}/auth/sync`, {
                method: "POST",
                headers: { "Content-Type": "application/json" },
@@ -53,18 +49,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                  picture: user.image,
                }),
              });
-             
              if (res.ok) {
                const dbUser = await res.json();
-               console.log("SYNC: Success! DB ID:", dbUser.id);
-               token.id = dbUser.id; // <--- Override with DB UUID
+               token.id = dbUser.id; // Override with UUID
                token.credits = dbUser.credits;
-             } else {
-               console.error("SYNC: Failed", await res.text());
              }
-          } catch (e) {
-            console.error("SYNC: Network Error", e);
-          }
+          } catch (e) { console.error("Sync failed", e); }
         }
       }
       return token;
@@ -77,5 +67,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/login" }, // <--- THIS LINE IS CRITICAL
 });

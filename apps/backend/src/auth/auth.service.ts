@@ -6,35 +6,25 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
-  // 1. SYNC (For Google Login) - Returns the DB User (with UUID)
+  // 1. SYNC (For Google Login)
   async syncUser(userDto: any) {
     const { email, name, picture } = userDto;
-    
-    // Find by email
     let user = await this.prisma.user.findUnique({ where: { email } });
-    
-    // If not found, Create new
     if (!user) {
       user = await this.prisma.user.create({
-        data: {
-          email,
-          name,
-          picture: picture,
-          credits: 3,
-        },
+        data: { email, name, picture: picture, credits: 3 },
       });
     }
-    return user; // Returns user with the correct UUID
+    return user;
   }
 
-  // 2. REGISTER (For Password Login)
+  // 2. REGISTER (New Feature)
   async register(body: any) {
     const { email, password, name } = body;
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new BadRequestException('Email already in use');
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -47,7 +37,7 @@ export class AuthService {
     return user;
   }
 
-  // 3. VALIDATE (For Password Login)
+  // 3. LOGIN (New Feature)
   async validateUser(body: any) {
     const { email, password } = body;
     const user = await this.prisma.user.findUnique({ where: { email } });
