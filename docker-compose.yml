@@ -1,67 +1,78 @@
 version: '3.8'
 
 services:
-  # Database Service
+  # 1. Database
   postgres:
-    image: postgres:15-alpine
-    container_name: supercv_db
-    restart: always
+    image: postgres:15
+    container_name: supercv_postgres
     environment:
-      POSTGRES_USER: user123
-      POSTGRES_PASSWORD: password123 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
       POSTGRES_DB: supercv
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
 
-  # Caching & Queue Service
+  # 2. Redis Queue
   redis:
     image: redis:alpine
     container_name: supercv_redis
-    restart: always
     ports:
-      - '6379:6379'
+      - "6379:6379"
     networks:
       - app-network
 
+  # 3. Backend API (NestJS)
   backend:
-    container_name: supercv_backend
     build:
       context: ./apps/backend
-      dockerfile: Dockerfile
+    container_name: supercv_backend
     ports:
-      - '3001:3000' 
+      - "3001:3001"
     environment:
-      - DATABASE_URL=postgresql://user123:password123@postgres:5432/supercv?schema=public  
+      - DATABASE_URL=postgresql://postgres:postgres_password@postgres:5432/supercv?schema=public
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - AI_ENGINE_URL=http://ai-engine:8000
     depends_on:
       - postgres
       - redis
     networks:
       - app-network
 
-
-  frontend:
-    container_name: supercv_frontend
+  # 4. AI Engine (Python)
+  ai-engine:
     build:
-      context: ./apps/frontend 
-      dockerfile: Dockerfile
+      context: ./apps/ai-engine
+    container_name: supercv_ai_engine
     ports:
-      - '3000:3000'
+      - "8000:8000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3001 
+      # Ensure you have a .env file in the same folder with GEMINI_API_KEY=...
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - app-network
+
+  # 5. Frontend (Next.js)
+  frontend:
+    build:
+      context: ./apps/frontend
+    container_name: supercv_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
     depends_on:
       - backend
     networks:
       - app-network
 
-volumes:
-  postgres_data:
-
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:

@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
 # Import modul
-from app.schemas import AnalysisResult, ImprovedCVResult
-from app.services.extractor import extract_text_from_file
-from app.services.ai_engine import analyze_cv, improve_cv
-from app.services.scraper import scrape_job_with_jina 
+from src.schemas import AnalysisResult, ImprovedCVResult
+from src.services.extractor import extract_text_from_file
+from src.services.ai_engine import analyze_cv, improve_cv
+from src.services.scraper import scrape_job_with_jina
 
 app = FastAPI(title="CV Analyzer API", version="1.2.0")
 
