@@ -42,4 +42,10 @@ export class CvController {
   async getCv(@Param('id') id: string) {
     return this.cvService.findOne(id);
   }
+
+  @Post(':id/improve')
+async improveCv(@Param('id') id: string) {
+  // Panggil service baru untuk generate JSON dari PDF
+  return this.cvService.generateImprovement(id);
+}
 }

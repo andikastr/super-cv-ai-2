@@ -56,4 +56,27 @@ export class AiIntegrationService {
       );
     }
   }
+
+  // Tambahkan method ini
+async improveCv(fileBuffer: Buffer, filename: string, jobContext: any) {
+  try {
+    const formData = new FormData();
+    formData.append('file', fileBuffer, { filename });
+    
+    if (jobContext?.text) formData.append('job_description', jobContext.text);
+    if (jobContext?.url) formData.append('job_url', jobContext.url);
+
+    // Panggil endpoint /api/improve di Python
+    const { data } = await firstValueFrom(
+      this.httpService.post(`${this.aiEngineUrl}/api/improve`, formData, {
+        headers: { ...formData.getHeaders() },
+        maxBodyLength: Infinity,
+      }),
+    );
+    return data; // Ini akan mengembalikan JSON structure (ImprovedCVResult)
+  } catch (error) {
+    this.logger.error('AI Improve Error', error);
+    throw new HttpException('AI Service Failed', 503);
+  }
+}
 }

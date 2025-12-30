@@ -3,33 +3,101 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 222.2 84% 4.9%; 
-    --foreground: 210 40% 98%;    
-    --card: 217.2 32.6% 17.5%;
-    --popover: 222.2 84% 4.9%;
-    --primary: 45 93% 47%;        
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --border: 217.2 32.6% 17.5%;
-  }
-}
-
-@layer base {
   body {
     @apply bg-slate-950 text-slate-100 font-sans antialiased;
     background-image: 
       radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.05) 0%, transparent 50%),
       radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.5) 0%, transparent 50%);
   }
+  b, strong { font-weight: bold !important; }
+  i, em { font-style: italic !important; }
 }
 
-@layer components {
-  
-  .glass {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+@layer utilities {
+  .no-print { @apply print:hidden; }
+  .print-visible { display: none; }
+}
+
+/* GLOBAL LIST RESET */
+ul, li {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* --- FINAL PRINT SETTINGS --- */
+@media print {
+  @page {
+    size: A4;
+    margin: 0; /* Wajib 0 */
   }
 
-  .text-gold {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-500;
+  html, body {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+
+  body * { visibility: hidden; }
+  .no-print, header, nav, aside, button, .ribbon-container { display: none !important; }
+
+  #cv-paper, #cv-paper * { 
+    visibility: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  #cv-paper {
+    position: absolute !important;
+    left: 0 !important;
+    
+    /* SOLUSI MARGIN: Gunakan nilai NEGATIF untuk menarik paksa ke atas */
+    /* Jika masih kurang naik, ubah -10mm jadi -15mm atau -20mm */
+    top: -15mm !important; 
+    
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 auto !important;
+    
+    /* Padding Kertas */
+    padding: 0mm 15mm 10mm 15mm !important; 
+    padding-top: 15mm !important; /* Padding dalam kertas agar teks tidak kepotong */
+    
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  /* FIX HEADER TUMPUK (VERTICAL STACK) */
+  /* Pastikan item header tidak menjadi width: 100% */
+  .header-item[contenteditable], .header-item {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Style umum ContentEditable saat Print */
+  [contenteditable] {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    white-space: pre-wrap;
+    line-height: 1.25 !important;
+    text-align: inherit;
+  }
+
+  li::marker { content: none !important; }
+  .cv-item {
+    break-inside: avoid !important;
+    margin-bottom: 3mm !important; 
   }
 }

@@ -1,14 +1,18 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 from typing import Optional
+import asyncio
+import json
 
-# Import modul
+# --- IMPORT MODULES ---
+# Pastikan src.schemas sudah diupdate dengan field baru (ats_score, writing_score, dll)
 from src.schemas import AnalysisResult, ImprovedCVResult
-from src.services.extractor import extract_text_from_file
-from src.services.ai_engine import analyze_cv, improve_cv
+from src.services.extractor import extract_text_from_bytes
+from src.services.ai_engine import analyze_cv, customize_cv 
 from src.services.scraper import scrape_job_with_jina
 
-app = FastAPI(title="CV Analyzer API", version="1.2.0")
+app = FastAPI(title="CV Analyzer API", version="1.4.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,79 +22,106 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- WRAPPER UNTUK MEMANGGIL AI DI THREAD POOL (BIAR GAK BLOCKING) ---
+def blocking_analyze(cv_text: str, job_desc: str):
+    return asyncio.run(analyze_cv(cv_text, job_desc))
+
+def blocking_customize(cv_text: str, mode: str, context_data: str):
+    return asyncio.run(customize_cv(cv_text, mode, context_data))
+
+# ==============================================================================
+# 1. ENDPOINT ANALYZE (MENGGUNAKAN PROMPT REKAN ANDA)
+# ==============================================================================
 @app.post("/api/analyze", response_model=AnalysisResult)
 async def analyze_endpoint(
     file: UploadFile = File(...),
     job_description: Optional[str] = Form(None),
     job_url: Optional[str] = Form(None)
 ):
-    # --- STEP 1: Tentukan Sumber Job Description ---
-    final_job_context = ""
-
-    # Prioritas 1: User copy-paste teks langsung (lebih akurat & cepat)
+    # 1. Siapkan Konteks Job Description
+    final_jd = ""
     if job_description and job_description.strip():
-        final_job_context = job_description
-    
-    # Prioritas 2: User kasih Link, kita fetch pakai Jina AI
+        final_jd = job_description
     elif job_url and job_url.strip():
-        print(f"Fetching job info from: {job_url} using Jina AI...") # Logging sederhana
-        final_job_context = await scrape_job_with_jina(job_url)
+        print(f"Fetching JD from URL: {job_url}")
+        final_jd = await scrape_job_with_jina(job_url)
     
-    # Jika keduanya kosong
-    else:
-        raise HTTPException(
-            status_code=400, 
-            detail="Mohon sertakan Job Description (teks) atau Job URL."
-        )
+    # Jika user kosongkan JD, kita beri default agar AI tetap jalan (General Review)
+    if not final_jd:
+        final_jd = "General Tech Professional requirements (Assess based on standard industry best practices)."
 
-    # --- STEP 2: Ekstraksi CV ---
-    cv_text = await extract_text_from_file(file)
-    if len(cv_text) < 50:
-        raise HTTPException(status_code=400, detail="File CV terbaca kosong atau terlalu pendek.")
-
-    # --- STEP 3: Proses AI ---
-    # Kita kirim hasil scrape Jina (markdown) langsung ke Gemini.
-    # Gemini sangat pandai membaca markdown.
-    result = await analyze_cv(cv_text, final_job_context)
-    
-    return result
-
-@app.post("/api/improve", response_model=ImprovedCVResult)
-async def improve_endpoint(
-    file: UploadFile = File(...),
-    job_description: Optional[str] = Form(None),
-    job_url: Optional[str] = Form(None)
-):
-    """
-    Endpoint untuk menulis ulang CV berdasarkan Job Description.
-    Mengembalikan JSON terstruktur yang siap dirender menjadi PDF baru.
-    """
-    # --- STEP 1: Tentukan Sumber Job Description (Sama seperti analyze) ---
-    final_job_context = ""
-
-    if job_description and job_description.strip():
-        final_job_context = job_description
-    elif job_url and job_url.strip():
-        print(f"Fetching job info from: {job_url} using Jina AI...")
-        final_job_context = await scrape_job_with_jina(job_url)
-    else:
-        raise HTTPException(
-            status_code=400, 
-            detail="Mohon sertakan Job Description (teks) atau Job URL."
-        )
-
-    # --- STEP 2: Ekstraksi CV ---
-    cv_text = await extract_text_from_file(file)
-    if len(cv_text) < 50:
-        raise HTTPException(status_code=400, detail="File CV terbaca kosong atau terlalu pendek.")
-
-    # --- STEP 3: Proses AI (Improve CV) ---
+    # 2. Baca File CV
+    content = await file.read()
     try:
-        result = await improve_cv(cv_text, final_job_context)
+        # Ekstrak Teks (Support PDF/DOCX)
+        cv_text = await run_in_threadpool(
+            extract_text_from_bytes, 
+            content, 
+            file.content_type
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Gagal membaca file: {str(e)}")
+
+    if len(cv_text) < 50:
+        raise HTTPException(status_code=400, detail="CV terlalu pendek atau kosong.")
+
+    # 3. Panggil AI Analysis
+    try:
+        # Result akan sesuai schema AnalysisResult (6 kriteria)
+        result = await run_in_threadpool(blocking_analyze, cv_text, final_jd)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gagal memproses perbaikan CV: {str(e)}")
+        print(f"AI Error: {e}")
+        raise HTTPException(status_code=500, detail="Terjadi kesalahan pada AI engine.")
+
+# ==============================================================================
+# 2. ENDPOINT CUSTOMIZE (DUAL MODE: JOB DESC / ANALYSIS)
+# ==============================================================================
+@app.post("/api/customize", response_model=ImprovedCVResult)
+async def customize_endpoint(
+    file: UploadFile = File(...),
+    mode: str = Form(...), # 'job_desc' atau 'analysis'
+    job_description: Optional[str] = Form(None),
+    analysis_context: Optional[str] = Form(None) # JSON String hasil analisis
+):
+    # 1. Tentukan Data Context berdasarkan Mode
+    final_context = ""
+    
+    if mode == "job_desc":
+        if not job_description:
+            raise HTTPException(400, "Mode 'job_desc' wajib menyertakan job_description.")
+        final_context = job_description
+        
+    elif mode == "analysis":
+        if not analysis_context:
+            # Fallback jika frontend error mengirim konteks
+            final_context = "Fix general weaknesses found in the CV."
+        else:
+            final_context = analysis_context 
+            
+    else:
+        raise HTTPException(400, "Mode tidak valid. Gunakan 'job_desc' atau 'analysis'.")
+
+    # 2. Ekstrak CV Lagi (Karena HTTP Stateless, kita butuh teks aslinya lagi)
+    content = await file.read()
+    try:
+        cv_text = await run_in_threadpool(
+            extract_text_from_bytes, 
+            content, 
+            file.content_type
+        )
+    except Exception as e:
+        raise HTTPException(400, f"Gagal membaca file: {str(e)}")
+
+    # 3. Panggil AI Customize
+    try:
+        # customize_cv akan mereturn JSON struktur CV baru (ImprovedCVResult)
+        result = await run_in_threadpool(blocking_customize, cv_text, mode, final_context)
+        return result
+    except Exception as e:
+        print(f"Customize Error: {e}")
+        raise HTTPException(500, "Gagal meng-generate CV baru.")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, timeout_keep_alive=300)

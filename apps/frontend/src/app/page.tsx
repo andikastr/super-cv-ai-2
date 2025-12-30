@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth"; 
 import { UploadCard } from "@/components/UploadCard"; 
 import { Sparkles, Zap } from "lucide-react";
+// 1. IMPORT PROVIDER DISINI
+import { CvProvider } from "@/lib/cv-context"; 
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -14,9 +16,7 @@ export default async function DashboardPage() {
 
       <div className="text-center mb-12 relative z-10 max-w-2xl mx-auto">
         {user ? (
-
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium mb-6">
               <Sparkles size={12} />
               <span>Pro Plan Active</span>
@@ -39,7 +39,6 @@ export default async function DashboardPage() {
             </div>
           </div>
         ) : (
-
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
              <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight text-white">
               Craft Your <span className="text-gold">Legacy</span>
@@ -52,8 +51,13 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      <div className="w-full max-w-3xl z-10">
-        <UploadCard />
+      <div className="w-full max-w-6xl z-10"> {/* Ubah max-w-3xl jadi max-w-6xl agar Editor muat */}
+        
+        {/* 2. BUNGKUS UPLOAD CARD DENGAN CV PROVIDER */}
+        <CvProvider>
+           <UploadCard />
+        </CvProvider>
+        
       </div>
 
     </main>

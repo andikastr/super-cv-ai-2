@@ -1,25 +1,30 @@
 import os
+import json
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from pydantic import ValidationError
-
-# Import schema
-from src.schemas import AnalysisResult, ImprovedCVResult
+from src.schemas import AnalysisResult, ImprovedCVResult, CVContactInfo
 
 load_dotenv()
-
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
-
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 MODEL_NAME = "gemini-3-flash-preview" 
 
+def clean_json_text(text: str) -> str:
+    try:
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0]
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0]
+        return text.strip()
+    except Exception:
+        return text
+
+# --- FUNGSI 1: ANALYZE (Prompt Rekan Anda) ---
 async def analyze_cv(cv_text: str, job_desc: str) -> AnalysisResult:
-    # --- PROMPT DIPERBARUI ---
+    # Prompt Rekan Anda + JSON Instruction
     prompt_text = f"""
     You are a Senior Technical Recruiter and CV Expert. 
-    Analyze the following Candidate CV against the provided Job Description and make the words You for the candidate, not He/She.
+    Analyze the following Candidate CV against the provided Job Description and make the words "You" for the candidate, not He/She.
 
     JOB DESCRIPTION:
     {job_desc}
@@ -27,160 +32,124 @@ async def analyze_cv(cv_text: str, job_desc: str) -> AnalysisResult:
     CANDIDATE CV CONTENT:
     {cv_text}
 
-    Please perform a deep analysis based on these 5 specific criteria:
+    Please perform a deep analysis based on these 6 specific criteria:
 
     1. **Candidate Overview**:
-         - Extract the candidate's full name from the CV.
-         - Make overall score (1-100) for each of the 5 keypoint(Writing style, CV Format & ATS, Skill Match, Experience & Projects, Key Strength).
-         - Provide detailed feedback for overall score including strengths and weaknesses for candidate to improve.
+       - Extract the candidate's full name.
+       - Make overall score (1-100).
+       - Provide detailed feedback for overall score including strengths and weaknesses.
     
     2. **Writing Style (Score 0-100)**: 
        - Check for clarity, grammar, and typos.
        - Identify weak phrasing (excessive passive voice) vs action-oriented language.
     
     3. **CV Format & ATS (Score 0-100)**: 
-       - Is the format ATS-friendly? (Clean structure, standard fonts, no complex graphics blocking text).
-       - If it's a "Creative CV", evaluate if it's readable by machines.
+       - Is the format ATS-friendly? (Clean structure, standard fonts).
+       - Is it machine-readable?
     
     4. **Skill Match (Score 0-100)**: 
        - How well do the hard skills and soft skills match the Job Description?
-       - Are keywords present?
     
     5. **Experience & Projects (Score 0-100)**: 
-       - Evaluate if the work history, projects, or portfolio are relevant to the role.
-       - Does the experience level (Seniority) match the requirement?
+       - Evaluate if work history/projects are relevant.
+       - Does the experience level (Seniority) match?
 
     6. **Keyword Relevance (Score 0-100)**:
-       - List the candidate's primary selling points found in the CV that match the job description.
-       - List any critical gaps or missing elements that could be improved.
+       - List primary selling points (strengths).
+       - List critical gaps or missing elements.
 
-    Finally, strictly organize the output into JSON matching the schema.
+    *** REQUIRED JSON OUTPUT FORMAT ***
+    You MUST output strictly strictly JSON matching this schema (do not output markdown text outside JSON):
+    {{
+        "candidate_name": "Name found in CV",
+        "overall_score": 0,
+        "overall_summary": "Detailed feedback using 'You'...",
+        "writing_score": 0,
+        "writing_detail": "Feedback on grammar/voice...",
+        "ats_score": 0,
+        "ats_detail": "Feedback on format...",
+        "skill_score": 0,
+        "skill_detail": "Feedback on matching skills...",
+        "experience_score": 0,
+        "experience_detail": "Feedback on relevance...",
+        "keyword_score": 0,
+        "key_strengths": ["Strength 1", "Strength 2"],
+        "missing_skills": ["Gap 1", "Gap 2"]
+    }}
     """
-    generate_config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=AnalysisResult, # Menggunakan schema baru
-        temperature=0.1, 
-    )
-
+    
     try:
         response = client.models.generate_content(
             model=MODEL_NAME,
-            contents=[
-                types.Content(
-                    role="user",
-                    parts=[
-                        types.Part.from_text(text=prompt_text)
-                    ]
-                )
-            ],
-            config=generate_config
+            contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt_text)])],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json", 
+                response_schema=AnalysisResult,
+                temperature=0.2 
+            )
         )
-
-        if response.parsed:
-            return response.parsed
-        else:
-            # Fallback parsing manual (jarang terjadi di SDK baru)
-            import json
-            json_data = json.loads(response.text)
-            return AnalysisResult(**json_data)
-
-    except ValidationError as ve:
-        print(f"Validation Error: {ve}")
-        # Return error object yang sesuai struktur baru
-        return AnalysisResult(
-            candidate_name="Unknown",
-            skill_score=0,
-            skill_detail="Error validation",
-            style_score=0,
-            style_detail="Error validation",
-            completeness_score=0,
-            completeness_detail="Error validation",
-            key_strengths=[],
-            gaps=[],
-            recommendations=["System Validation Error"]
-        )
+        if response.parsed: return response.parsed
+        return AnalysisResult(**json.loads(clean_json_text(response.text)))
     except Exception as e:
-        print(f"AI Engine Error: {e}")
+        print(f"Analyze Error: {e}")
+        # Return fallback
         return AnalysisResult(
-            candidate_name="Unknown",
-            skill_score=0,
-            skill_detail="System Error",
-            style_score=0,
-            style_detail="System Error",
-            completeness_score=0,
-            completeness_detail="System Error",
-            key_strengths=[],
-            gaps=[],
-            recommendations=["System Internal Error"]
+            candidate_name="Unknown", overall_score=0, overall_summary=f"Error: {str(e)}",
+            writing_score=0, writing_detail="", ats_score=0, ats_detail="",
+            skill_score=0, skill_detail="", experience_score=0, experience_detail="",
+            keyword_score=0, key_strengths=[], missing_skills=[]
         )
 
-async def improve_cv(cv_text: str, job_desc: str) -> ImprovedCVResult:
-    """
-    Menulis ulang CV agar sesuai dengan Job Description.
-    Output: JSON terstruktur (ImprovedCVResult).
-    """
-    
-    # Prompt sesuai permintaan Anda
+# --- FUNGSI 2: CUSTOMIZE (Improved Logic) ---
+async def customize_cv(cv_text: str, mode: str, context_data: str) -> ImprovedCVResult:
+    # 1. Instruksi Mode
+    if mode == 'job_desc':
+        mode_instruction = f"""
+        *** MODE: JOB DESCRIPTION TARGETING ***
+        TARGET JOB: {context_data}
+        INSTRUCTIONS:
+        - ATS Optimization: Inject keywords from Target Job into Summary & Skills.
+        - Relevance: Prioritize experiences matching the job duties.
+        """
+    else: # analysis
+        mode_instruction = f"""
+        *** MODE: WEAKNESS FIXING (BASED ON ANALYSIS) ***
+        ANALYSIS FEEDBACK: {context_data}
+        INSTRUCTIONS:
+        - Fix Gaps: Add missing skills identified in feedback if logical.
+        - Fix Metrics: If feedback says "lack of numbers", add estimated metrics (e.g., "Increased X by ~20%").
+        """
+
+    # 2. Prompt Rewrite (Elite Writer)
     prompt_text = f"""
-    You are a professional CV writer specializing in creating ATS-optimized, PDF-ready resumes. Your task is to completely rewrite this CV to perfectly match the job requirements while maintaining professional formatting suitable for PDF rendering.
-
-    **STRICT PROHIBITIONS (DO NOT IGNORE):**
-    1. **NO FABRICATION:** You are STRICTLY FORBIDDEN from inventing work experiences, skills, education, or certifications not present in the original CV.
-    2. **IDENTITY PRESERVATION:** Do NOT change the candidate's Name, Phone, Email, or LinkedIn URL. Use the exact contact details provided in the input CV.
-    3. **FACTUAL INTEGRITY:** Do NOT change the Degree type (e.g., do not change a Bachelor's to a PhD), University Name, or Company Names to match the job description.
-    4. **HONEST OPTIMIZATION:** If the user lacks a specific requirement (e.g., "PhD"), do NOT add it. Instead, highlight their strongest existing relevant experience that compensates for it.
+    You are an Elite Resume Writer (Top 1%). Rewrite this CV to be world-class.
     
-    **QUALITY ASSURANCE:**
-    - CV must demonstrate clear career progression
-    - Content must be achievement-oriented, not task-oriented
-    - Ensure perfect grammar and professional language
+    {mode_instruction}
 
-    **JOB POSTING CONTENT:**
-    {job_desc}
-
-    **ORIGINAL CV CONTENT:**
+    *** WRITING RULES ***
+    1. **Summary:** 3-4 sentences, high impact. Format: "[Title] with [Years] exp... Expert in [Skills]..."
+    2. **Experience:** Use **Google XYZ Formula** ("Accomplished X, measured by Y, by doing Z").
+       - Start bullets with Power Verbs (Spearheaded, Engineered).
+       - **Quantify Results:** Add numbers/metrics to every bullet point possible.
+    
+    ORIGINAL CV:
     {cv_text}
 
-    **CRITICAL REQUIREMENTS:**
-
-    1. **Analyze Requirements:** Extract ALL skills, qualifications, keywords, and requirements from the job posting
-    2. **Perfect Match:** Ensure the CV demonstrates 100% compatibility with job requirements
-    3. **Keyword Optimization:** Naturally incorporate ALL relevant terms from the job posting
-    4. **Professional Structure:** Use the exact CV structure and formatting specified in the JSON schema.
-    5. **Action Oriented:** Rewrite bullet points in work experience to be result-oriented (STAR method) using strong action verbs.
-    
-    Finally, strictly organize the output into JSON matching the provided schema.
+    OUTPUT: Return strictly JSON (ImprovedCVResult schema).
     """
-
-    generate_config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=ImprovedCVResult, # Menggunakan schema ImprovedCVResult
-        temperature=0.2, # Sedikit lebih kreatif daripada analyze tapi tetap terkontrol
-    )
 
     try:
         response = client.models.generate_content(
             model=MODEL_NAME,
-            contents=[
-                types.Content(
-                    role="user",
-                    parts=[
-                        types.Part.from_text(text=prompt_text)
-                    ]
-                )
-            ],
-            config=generate_config
+            contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt_text)])],
+            config=types.GenerateContentConfig(response_mime_type="application/json", response_schema=ImprovedCVResult)
         )
-
-        if response.parsed:
-            return response.parsed
-        else:
-            import json
-            json_data = json.loads(response.text)
-            return ImprovedCVResult(**json_data)
-
+        if response.parsed: return response.parsed
+        return ImprovedCVResult(**json.loads(clean_json_text(response.text)))
     except Exception as e:
-        print(f"AI Improve CV Error: {e}")
-        # Return object kosong/default jika error, agar API tidak crash 500
-        # Idealnya handle error lebih baik di production
-        raise e
+        print(f"Customize Error: {e}")
+        return ImprovedCVResult(
+            full_name="Error", professional_summary=f"Error: {str(e)}",
+            contact_info=CVContactInfo(email="", phone="", location=""),
+            hard_skills=[], soft_skills=[], work_experience=[], education=[], projects=[]
+        )

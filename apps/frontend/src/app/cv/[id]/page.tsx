@@ -125,10 +125,21 @@ export default function CvResultPage() {
         <div className="max-w-6xl mx-auto px-6">
             
             
-            <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white mb-8 transition-colors group">
-                <ChevronLeft size={20} className="mr-1 group-hover:-translate-x-1 transition-transform"/> 
-                Back to Dashboard
-            </Link>
+            <div className="flex items-center justify-between mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white transition-colors group">
+            <ChevronLeft size={20} className="mr-1 group-hover:-translate-x-1 transition-transform"/> 
+            Back to Dashboard
+        </Link>
+
+        {/* NEW BUTTON: Go to Customize Page */}
+        <Link 
+          href={`/cv/${id}/customize`} // <--- LINKS TO YOUR NEW PAGE
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 hover:bg-slate-200 font-bold rounded-xl transition-all shadow-lg shadow-white/5"
+        >
+          <PenTool size={18} />
+          Customize & Improve
+        </Link>
+      </div>
 
             {data && (
             <motion.div 
