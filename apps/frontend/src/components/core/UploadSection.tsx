@@ -4,55 +4,70 @@ import { useState } from "react";
 import { useCv } from "@/lib/cv-context";
 import { UploadCloud, FileText, Link as LinkIcon, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation"; 
+import { useSession } from "next-auth/react"; // [BARU] Import Session Hook
 
 export function UploadSection() {
-  const { setAnalysisResult, setCvData, setView, setIsLoading, isLoading, setFile, file } = useCv();
+  const { setFile, file, setIsLoading, isLoading } = useCv();
   const [activeTab, setActiveTab] = useState<"text" | "link" | "general">("general");
   const [jobContext, setJobContext] = useState(""); 
+  
+  const router = useRouter();
+  
+  // [BARU] Ambil data session user (untuk mendapatkan UUID)
+  const { data: session } = useSession(); 
 
   const handleAnalyze = async () => {
+    // [BARU] Cek apakah user sudah login
+    if (!session || !session.user?.id) {
+        alert("Silakan login terlebih dahulu untuk memulai analisis.");
+        router.push("/login"); // Redirect ke halaman login
+        return;
+    }
+
     if (!file) return alert("Please upload a CV PDF first.");
 
     setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file);
     
-    if (activeTab === "text") formData.append("job_description", jobContext);
-    if (activeTab === "link") formData.append("job_url", jobContext);
+    // Sesuaikan field name dengan DTO di NestJS (AnalyzeCvDto)
+    if (activeTab === "text") {
+        formData.append("jobDescriptionText", jobContext);
+    }
+    if (activeTab === "link") {
+        formData.append("jobDescriptionUrl", jobContext);
+    }
 
     try {
-      const res = await fetch("http://localhost:8000/api/analyze", { 
+      // Panggil Backend NestJS
+      const res = await fetch("http://localhost:3001/cv/analyze", { 
         method: "POST", 
-        body: formData 
+        body: formData,
+        headers: {
+            // [BARU] Kirim UUID User yang valid dari Session
+            'userId': session.user.id 
+        }
       });
       
-      if (!res.ok) throw new Error("Backend Error");
-      
-      const data = await res.json();
-      
-      // --- UPDATE PENTING DISINI ---
-      // 1. Simpan hasil Analisis (Skor)
-      if (data.analysis) {
-          setAnalysisResult(data.analysis);
-      } else {
-          // Fallback jika format lama
-          setAnalysisResult(data);
-      }
-
-      // 2. Simpan Data CV Asli (Agar Editor tidak blank/crash)
-      if (data.cv_data) {
-          setCvData(data.cv_data);
-      } else {
-          console.warn("Backend did not return cv_data. Editor might be empty.");
+      if (!res.ok) {
+          // Handle error spesifik (misal token expired)
+          if (res.status === 401) {
+              throw new Error("Sesi tidak valid. Silakan login ulang.");
+          }
+          const errData = await res.json();
+          throw new Error(errData.message || "Upload failed");
       }
       
-      setView("ANALYSIS"); 
+      const data = await res.json(); // Backend return: { cvId: "...", status: "PENDING" }
       
-    } catch (e) {
+      // Redirect ke halaman Polling (Dynamic Route)
+      router.push(`/cv/${data.cvId}/analyze`);
+      
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to analyze. Ensure Python backend (port 8000) is running.");
-    } finally {
-      setIsLoading(false);
+      alert(`Error: ${e.message}`);
+      setIsLoading(false); 
     }
   };
 
@@ -60,7 +75,7 @@ export function UploadSection() {
     <div className="max-w-4xl mx-auto w-full glass-panel p-8 rounded-[30px] border border-white/10 bg-slate-900/40 backdrop-blur-2xl shadow-2xl">
       <div className="text-center mb-10">
          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-4">
-            Optimize Your CV with AI
+           Optimize Your CV with AI
          </h1>
          <p className="text-slate-400 text-lg">Upload your resume and get a ruthless 6-point analysis.</p>
       </div>
@@ -122,7 +137,7 @@ export function UploadSection() {
            <button onClick={handleAnalyze} disabled={isLoading || !file} 
              className="h-16 bg-white text-slate-950 rounded-xl font-bold hover:bg-slate-200 transition-all flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:-translate-y-1">
               {isLoading ? <Loader2 className="animate-spin"/> : <Sparkles size={20}/>}
-              {isLoading ? "Deep Analysis..." : "Analyze CV Strategy"}
+              {isLoading ? "Starting Analysis..." : "Analyze CV Strategy"}
            </button>
         </div>
       </div>

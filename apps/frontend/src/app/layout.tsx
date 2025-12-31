@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/providers/AuthProvider"; 
+import { CvProvider } from "@/lib/cv-context"; // [BARU] Import ini
 import { Navbar } from "@/components/Navbar"; 
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -25,13 +26,20 @@ export default function RootLayout({
         inter.variable,
         playfair.variable
       )}>
+        {/* 1. AuthProvider Paling Luar (Menyediakan Session) */}
         <AuthProvider>
-          <Navbar />
-
-          <main className="pt-24 min-h-screen">
-            {children}
-          </main>
           
+          {/* 2. CvProvider di Dalamnya (Menyediakan State CV) */}
+          <CvProvider>
+            
+            <Navbar />
+
+            <main className="pt-24 min-h-screen">
+              {children}
+            </main>
+            
+          </CvProvider>
+
         </AuthProvider>
       </body>
     </html>

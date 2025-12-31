@@ -2,9 +2,9 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AiIntegrationService } from './ai-integration.service';
+import { AiIntegrationService } from './ai-integration.service'; // Import Service tadi
 import { CvStatus } from '@prisma/client';
-import * as fs from 'fs'; // <--- Import fs
+import * as fs from 'fs';
 
 @Processor('cv_queue')
 export class CvProcessor extends WorkerHost {
@@ -12,53 +12,93 @@ export class CvProcessor extends WorkerHost {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly aiService: AiIntegrationService,
+    private readonly aiService: AiIntegrationService, // INJECT DISINI
   ) {
     super();
   }
 
   async process(job: Job<any, any, string>): Promise<any> {
-    const { cvId, filePath, jobContext } = job.data;
-    this.logger.log(`Processing Job ${job.id} for CV: ${cvId}`);
+    this.logger.log(`Processing Job [${job.name}] ID: ${job.id}`);
 
     try {
+      switch (job.name) {
+        case 'analyze-job':
+          return await this.handleAnalyze(job);
+        case 'customize-job':
+          return await this.handleCustomize(job);
+        default:
+          throw new Error(`Unknown job name: ${job.name}`);
+      }
+    } catch (error) {
+      this.logger.error(`Job ${job.id} Failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  // --- HANDLER 1: ANALYZE ---
+  private async handleAnalyze(job: Job) {
+    const { cvId, filePath, jobContext } = job.data;
+
+    try {
+      // 1. Update Status
+      await this.prisma.cV.update({ where: { id: cvId }, data: { status: CvStatus.PROCESSING } });
+
+      // 2. Baca File Buffer
+      if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+      const fileBuffer = fs.readFileSync(filePath);
+
+      // 3. Panggil AI Service
+      const result = await this.aiService.analyzeCv(
+        fileBuffer, 
+        'resume.pdf', // Nama file dummy atau ambil dari DB jika ada
+        jobContext
+      );
+
+      // 4. Update DB
       await this.prisma.cV.update({
         where: { id: cvId },
-        data: { status: CvStatus.PROCESSING },
+        data: {
+          status: CvStatus.COMPLETED,
+          analysisResult: result.analysis,
+          originalData: result.cv_data,
+        },
       });
 
-      // --- THE FIX: Read the Real File ---
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`File not found at: ${filePath}`);
-      }
-      const fileBuffer = fs.readFileSync(filePath);
-      // ----------------------------------
+    } catch (error) {
+      await this.prisma.cV.update({ where: { id: cvId }, data: { status: CvStatus.FAILED } });
+      throw error;
+    }
+  }
 
-      // Send Real PDF to AI
-      const aiResult = await this.aiService.analyzeCv(
-        fileBuffer, 
-        'resume.pdf', 
-        jobContext
+  // --- HANDLER 2: CUSTOMIZE ---
+  private async handleCustomize(job: Job) {
+    const { cvId, mode, filePath, contextData } = job.data;
+
+    try {
+      await this.prisma.cV.update({ where: { id: cvId }, data: { status: CvStatus.PROCESSING } });
+
+      if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+      const fileBuffer = fs.readFileSync(filePath);
+
+      // Panggil AI Service
+      const aiDraft = await this.aiService.customizeCv(
+        fileBuffer,
+        'resume.pdf',
+        mode,
+        contextData
       );
 
       await this.prisma.cV.update({
         where: { id: cvId },
         data: {
           status: CvStatus.COMPLETED,
-          analysisResult: aiResult,
+          aiDraft: aiDraft,
         },
       });
 
-      this.logger.log(`Job ${job.id} Completed Successfully`);
     } catch (error) {
-      this.logger.error(`Job ${job.id} Failed: ${error.message}`);
-      
-      await this.prisma.cV.update({
-        where: { id: cvId },
-        data: { status: CvStatus.FAILED },
-      });
-      
-      throw error; 
+      await this.prisma.cV.update({ where: { id: cvId }, data: { status: CvStatus.FAILED } });
+      throw error;
     }
   }
 }

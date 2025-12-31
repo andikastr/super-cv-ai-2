@@ -1,34 +1,36 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 # --- SCHEMA HASIL ANALISIS (Update sesuai Prompt Rekan Anda) ---
-class AnalysisResult(BaseModel):
-    candidate_name: str
+class CriticalGap(BaseModel):
+    gap: str = Field(..., description="The specific missing skill or weakness (e.g., 'Docker', 'Leadership')")
+    action: str = Field(..., description="A concrete, actionable recommendation on what the candidate should do (e.g., 'Build a containerized app', 'Lead a small team project')")
+
+# --- 2. UPDATE ANALYSIS SCHEMA ---
+class AnalysisResponse(BaseModel):
+    candidate_name: str = Field(..., description="Full name of the candidate")
+    overall_score: int = Field(..., description="Overall score 1-100")
+    overall_summary: str = Field(..., description="Detailed feedback summary")
     
-    # 1. Candidate Overview
-    overall_score: int
-    overall_summary: str # Detailed feedback (strengths & weaknesses)
+    # Detailed Scoring
+    ats_score: int = Field(..., description="ATS compatibility score 0-100")
+    ats_detail: str = Field(..., description="Feedback on formatting and structure")
     
-    # 2. Writing Style
-    writing_score: int
-    writing_detail: str # Clarity, grammar, passive voice check
+    writing_score: int = Field(..., description="Writing style score 0-100")
+    writing_detail: str = Field(..., description="Feedback on grammar and voice")
     
-    # 3. CV Format & ATS
-    ats_score: int
-    ats_detail: str # Clean structure, readability
+    skill_score: int = Field(..., description="Skill match score 0-100")
+    skill_detail: str = Field(..., description="Feedback on hard/soft skills")
     
-    # 4. Skill Match
-    skill_score: int
-    skill_detail: str # Hard/Soft skills match
+    experience_score: int = Field(..., description="Experience relevance score 0-100")
+    experience_detail: str = Field(..., description="Feedback on seniority and projects")
     
-    # 5. Experience & Projects
-    experience_score: int
-    experience_detail: str # Relevance & Seniority check
+    # Section 6: Keyword & Gaps (UPDATED)
+    keyword_score: int = Field(..., description="Keyword relevance score 0-100")
+    key_strengths: List[str] = Field(..., description="List of primary selling points")
     
-    # 6. Keyword Relevance & Gaps
-    keyword_score: int
-    key_strengths: List[str] # Selling points
-    missing_skills: List[str] # Critical gaps/missing elements
+    # GANTI 'missing_skills' MENJADI 'critical_gaps'
+    critical_gaps: List[CriticalGap] = Field(..., description="List of critical gaps with specific actionable advice")
 
 # --- SCHEMA CUSTOMIZE (Tetap Sama) ---
 class CVContactInfo(BaseModel):
@@ -36,17 +38,20 @@ class CVContactInfo(BaseModel):
     phone: str
     location: str
     linkedin: Optional[str] = None
+    portfolio: Optional[str] = None
 
 class CVExperience(BaseModel):
     title: str
     company: str
     dates: str
     achievements: List[str]
+    location: Optional[str] = None
 
 class CVEducation(BaseModel):
     institution: str
     degree: str
     year: str
+    location: Optional[str] = None
 
 class CVProject(BaseModel):
     name: str
@@ -62,3 +67,4 @@ class ImprovedCVResult(BaseModel):
     work_experience: List[CVExperience]
     education: List[CVEducation]
     projects: List[CVProject]
+    certifications: Optional[List[str]] = None

@@ -6,6 +6,7 @@ import { CvService } from './cv.service';
 import { CvProcessor } from './cv.processor'; // <--- The Worker
 import { AiIntegrationService } from './ai-integration.service'; // <--- The Bridge
 import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
     }),
     // 2. Register HttpModule so AiIntegrationService can make requests
     HttpModule,
+    PrismaModule,
   ],
   controllers: [CvController],
   providers: [

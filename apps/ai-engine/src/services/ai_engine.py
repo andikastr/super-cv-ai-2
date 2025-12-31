@@ -3,7 +3,7 @@ import json
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from src.schemas import AnalysisResult, ImprovedCVResult, CVContactInfo
+from src.schemas import AnalysisResponse, ImprovedCVResult, CVContactInfo
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -87,12 +87,15 @@ async def analyze_cv(cv_text: str, job_desc: str):
        - Evaluate if work history/projects are relevant.
        - Does the experience level (Seniority) match?
 
-    6. **Keyword Relevance (Score 0-100)**:
-       - List primary selling points (strengths).
-       - List critical gaps or missing elements.
+    6. **Keyword Relevance & Critical Gaps (Score 0-100)**:
+        - List primary selling points (strengths).
+        - Identify critical gaps or missing elements.
+        - **CRITICAL INSTRUCTION**: For EACH gap identified, provide a specific "action" or recommendation. 
+          Do NOT just say "Learn Docker". Say "Build a simple microservice using Docker to understand containerization basics."
+          The action must be concrete and educational.
 
     *** REQUIRED JSON OUTPUT FORMAT ***
-    You MUST output strictly strictly JSON matching this schema AnalysisResult.
+    You MUST output strictly strictly JSON matching this schema AnalysisResponse.
     """
     
     analysis_res = None
@@ -102,19 +105,19 @@ async def analyze_cv(cv_text: str, job_desc: str):
             contents=[types.Content(role="user", parts=[types.Part.from_text(text=prompt_text)])],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json", 
-                response_schema=AnalysisResult,
+                response_schema=AnalysisResponse,
                 temperature=0.2 
             )
         )
         if response.parsed: 
             analysis_res = response.parsed
         else:
-            analysis_res = AnalysisResult(**json.loads(clean_json_text(response.text)))
+            analysis_res = AnalysisResponse(**json.loads(clean_json_text(response.text)))
             
     except Exception as e:
         print(f"Analyze Error: {e}")
         # Return fallback
-        analysis_res = AnalysisResult(
+        analysis_res = AnalysisResponse(
             candidate_name="Unknown", overall_score=0, overall_summary=f"Error: {str(e)}",
             writing_score=0, writing_detail="", ats_score=0, ats_detail="",
             skill_score=0, skill_detail="", experience_score=0, experience_detail="",
@@ -134,40 +137,32 @@ async def analyze_cv(cv_text: str, job_desc: str):
 
 # --- FUNGSI 2: CUSTOMIZE (Prompt Asli Anda - Elite Writer) ---
 async def customize_cv(cv_text: str, mode: str, context_data: str) -> ImprovedCVResult:
-    # 1. Instruksi Mode
+    # Instruksi Mode
     if mode == 'job_desc':
-        mode_instruction = f"""
-        *** MODE: JOB DESCRIPTION TARGETING ***
-        TARGET JOB: {context_data}
-        INSTRUCTIONS:
-        - ATS Optimization: Inject keywords from Target Job into Summary & Skills.
-        - Relevance: Prioritize experiences matching the job duties.
-        """
-    else: # analysis
-        mode_instruction = f"""
-        *** MODE: WEAKNESS FIXING (BASED ON ANALYSIS) ***
-        ANALYSIS FEEDBACK: {context_data}
-        INSTRUCTIONS:
-        - Fix Gaps: Add missing skills identified in feedback if logical.
-        - Fix Metrics: If feedback says "lack of numbers", add estimated metrics (e.g., "Increased X by ~20%").
-        """
+        mode_context = f"TARGET JOB: {context_data}"
+    else: 
+        mode_context = f"ANALYSIS FEEDBACK: {context_data}"
 
-    # 2. Prompt Rewrite (Elite Writer)
     prompt_text = f"""
-    You are an Elite Resume Writer (Top 1%). Rewrite this CV to be world-class.
+    You are an Ethical Expert Resume Writer. Rewrite the CV to maximize impact, BUT REMAIN FACTUAL.
     
-    {mode_instruction}
-
-    *** WRITING RULES ***
-    1. **Summary:** 3-4 sentences, high impact. Format: "[Title] with [Years] exp... Expert in [Skills]..."
-    2. **Experience:** Use **Google XYZ Formula** ("Accomplished X, measured by Y, by doing Z").
-       - Start bullets with Power Verbs (Spearheaded, Engineered).
-       - **Quantify Results:** Add numbers/metrics to every bullet point possible.
-    
-    ORIGINAL CV:
+    ORIGINAL CV CONTENT:
     {cv_text}
+    
+    CONTEXT:
+    {mode_context}
+    
+    *** STRICT ETHICAL GUIDELINES ***:
+    1. **NO HALLUCINATIONS**: Do NOT add "Hard Skills", "Certifications", or "Work Experiences" NOT present in the ORIGINAL CV.
+    2. **NO FABRICATION**: If the Job Description asks for a skill the candidate doesn't have, DO NOT add it.
+    3. **TRUTH OPTIMIZATION**: You MAY rephrase existing bullets to highlight keywords if supported by facts.
+    
+    *** WRITING INSTRUCTIONS ***:
+    1. **Summary**: Punchy, metric-driven, tailored to context using ONLY existing facts.
+    2. **Experience**: Polish bullets with strong action verbs (Spearheaded, Engineered). Quantify results if metrics exist or can be reasonably estimated from context.
+    3. **Skills**: Re-organize skills to prioritize relevance.
 
-    OUTPUT: Return strictly JSON (ImprovedCVResult schema).
+    OUTPUT: Strictly JSON (ImprovedCVResult schema).
     """
 
     try:

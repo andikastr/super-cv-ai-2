@@ -2,16 +2,16 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from typing import Optional, Dict, Any
-import asyncio
 import json
 
 # --- IMPORT MODULES ---
-from src.schemas import AnalysisResult, ImprovedCVResult
+# UPDATE: Ganti AnalysisResult menjadi AnalysisResponse (sesuai schema baru)
+from src.schemas import AnalysisResponse, ImprovedCVResult
 from src.services.extractor import extract_text_from_bytes
 from src.services.ai_engine import analyze_cv, customize_cv 
 from src.services.scraper import scrape_job_with_jina
 
-app = FastAPI(title="CV Analyzer API", version="1.5.0")
+app = FastAPI(title="CV Analyzer API", version="1.6.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,17 +21,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- WRAPPER ASYNC ---
-def blocking_analyze(cv_text: str, job_desc: str):
-    return asyncio.run(analyze_cv(cv_text, job_desc))
-
-def blocking_customize(cv_text: str, mode: str, context_data: str):
-    return asyncio.run(customize_cv(cv_text, mode, context_data))
-
 # ==============================================================================
-# 1. ENDPOINT ANALYZE (FIXED)
+# 1. ENDPOINT ANALYZE (UPDATED)
 # ==============================================================================
-# HAPUS 'response_model=AnalysisResult' agar bisa return Dictionary {analysis, cv_data}
 @app.post("/api/analyze")
 async def analyze_endpoint(
     file: UploadFile = File(...),
@@ -43,13 +35,17 @@ async def analyze_endpoint(
     if job_description and job_description.strip():
         final_jd = job_description
     elif job_url and job_url.strip():
-        print(f"Fetching JD from URL: {job_url}")
-        final_jd = await scrape_job_with_jina(job_url)
+        try:
+            print(f"Fetching JD from URL: {job_url}")
+            final_jd = await scrape_job_with_jina(job_url)
+        except Exception as e:
+            print(f"Scraping warning: {e}")
+            final_jd = ""
     
     if not final_jd:
         final_jd = "General Tech Professional requirements (Assess based on standard industry best practices)."
 
-    # 2. Baca File CV
+    # 2. Baca File CV (CPU Bound -> Pakai threadpool)
     content = await file.read()
     try:
         cv_text = await run_in_threadpool(
@@ -63,11 +59,17 @@ async def analyze_endpoint(
     if len(cv_text) < 50:
         raise HTTPException(status_code=400, detail="CV terlalu pendek atau kosong.")
 
-    # 3. Panggil AI Analysis
+    # 3. Panggil AI Analysis (Async I/O -> Langsung await)
     try:
-        # Output dari ai_engine sekarang adalah Dict: {'analysis': ..., 'cv_data': ...}
-        result = await run_in_threadpool(blocking_analyze, cv_text, final_jd)
+        # UPDATE: Langsung await fungsi async, tidak perlu run_in_threadpool
+        # Return tipe Dictionary (dari model_dump)
+        result = await analyze_cv(cv_text, final_jd)
+        
+        if not result:
+            raise HTTPException(status_code=500, detail="AI Analysis returned empty result.")
+            
         return result
+
     except Exception as e:
         print(f"AI Error: {e}")
         raise HTTPException(status_code=500, detail=f"AI Engine Error: {str(e)}")
@@ -97,6 +99,7 @@ async def customize_endpoint(
     else:
         raise HTTPException(400, "Mode tidak valid.")
 
+    # 1. Extract Text
     content = await file.read()
     try:
         cv_text = await run_in_threadpool(
@@ -107,8 +110,10 @@ async def customize_endpoint(
     except Exception as e:
         raise HTTPException(400, f"Gagal membaca file: {str(e)}")
 
+    # 2. Generate Improved CV
     try:
-        result = await run_in_threadpool(blocking_customize, cv_text, mode, final_context)
+        # UPDATE: Langsung await
+        result = await customize_cv(cv_text, mode, final_context)
         return result
     except Exception as e:
         print(f"Customize Error: {e}")
@@ -116,4 +121,4 @@ async def customize_endpoint(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, timeout_keep_alive=300)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, timeout_keep_alive=30)

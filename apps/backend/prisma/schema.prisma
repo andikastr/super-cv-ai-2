@@ -27,7 +27,9 @@ model CV {
   
   fileUrl        String
   status         CvStatus  @default(PENDING)
+  originalData   Json?     
   analysisResult Json?     
+  aiDraft        Json?       
   
   jobContext     Json?     
   
