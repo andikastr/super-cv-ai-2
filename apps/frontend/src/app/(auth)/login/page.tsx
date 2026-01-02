@@ -11,6 +11,8 @@ import { toast } from "sonner";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
+  
+  // Ambil URL tujuan (default ke home "/")
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,6 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-     
       const res = await signIn("credentials", { 
         redirect: false, 
         email, 
@@ -30,13 +31,10 @@ function LoginForm() {
       });
       
       if (res?.error) {
-        
         toast.error("Invalid Email or Password");
         setIsLoading(false);
       } else {
-        
         toast.success("Welcome back!");
-        
         router.push(callbackUrl);
         router.refresh();
       }
@@ -46,9 +44,19 @@ function LoginForm() {
     }
   };
 
+  // [PERBAIKAN UTAMA ADA DISINI]
   const handleGoogleLogin = () => {
       setIsLoading(true);
-      signIn("google", { callbackUrl: callbackUrl });
+      toast.loading("Redirecting to Google...");
+      
+      // Cek apakah callbackUrl sudah punya query param (?)
+      // Jika sudah ada (misal /dashboard?tab=1), pakai '&'. Jika belum, pakai '?'.
+      const separator = callbackUrl.includes('?') ? '&' : '?';
+      
+      // Tambahkan penanda 'login=success' ke URL tujuan
+      const finalCallbackUrl = `${callbackUrl}${separator}login=success`;
+
+      signIn("google", { callbackUrl: finalCallbackUrl });
   };
 
   return (

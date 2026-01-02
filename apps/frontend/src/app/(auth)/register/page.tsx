@@ -11,6 +11,8 @@ import { toast } from "sonner";
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
+  
+  // Ambil callbackUrl asli, default ke "/"
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +26,6 @@ function RegisterForm() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-      
       
       const res = await fetch(`${backendUrl}/auth/register`, {
         method: "POST",
@@ -41,10 +42,8 @@ function RegisterForm() {
         throw new Error(errorMessage);
       }
 
-      
       toast.success("Account created successfully! Logging you in...");
 
-      
       const loginRes = await signIn("credentials", { 
         redirect: false, 
         email, 
@@ -52,7 +51,6 @@ function RegisterForm() {
       });
 
       if (loginRes?.error) {
-  
         toast.warning("Please login with your new account.");
         router.push("/login");
       } else {
@@ -61,16 +59,22 @@ function RegisterForm() {
       }
 
     } catch (error: any) {
-      
       toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // [PERBAIKAN SAMA SEPERTI LOGIN]
   const handleGoogleLogin = () => {
       setIsLoading(true);
-      signIn("google", { callbackUrl: callbackUrl });
+      toast.loading("Redirecting to Google...");
+      
+      // Sisipkan '?login=success' agar AuthToast mendeteksinya nanti
+      const separator = callbackUrl.includes('?') ? '&' : '?';
+      const finalCallbackUrl = `${callbackUrl}${separator}login=success`;
+
+      signIn("google", { callbackUrl: finalCallbackUrl });
   };
 
   return (

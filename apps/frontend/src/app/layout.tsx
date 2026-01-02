@@ -6,6 +6,8 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CvProvider } from "@/lib/cv-context"; 
 import { Navbar } from "@/components/Navbar"; 
 import { Toaster } from "sonner";
+import { AuthToast } from "@/components/auth-toast";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -35,6 +37,9 @@ export default function RootLayout({
             <main className="pt-24 min-h-screen">
               {children}
               <Toaster position="top-center" richColors theme="dark" />
+              <Suspense fallback={null}> 
+                <AuthToast />
+              </Suspense>
             </main>
             
           </CvProvider>
