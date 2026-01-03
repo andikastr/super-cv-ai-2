@@ -1,9 +1,15 @@
 import { IsString, IsNotEmpty, IsOptional, IsUrl } from 'class-validator';
 
+/**
+ * DTO for CV analysis request
+ * Note: The file itself is received via @UploadedFile() with FileInterceptor,
+ * not through the DTO body. These fields are optional metadata.
+ */
 export class AnalyzeCvDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  fileKey: string; 
+  fileKey?: string; // Optional - only used if file is pre-uploaded to storage
+
   @IsOptional()
   @IsString()
   jobDescriptionText?: string;
@@ -19,8 +25,8 @@ export class WebhookResultDto {
   cvId: string;
 
   @IsNotEmpty()
-  result: any; 
-  
+  result: any;
+
   @IsString()
   status: 'COMPLETED' | 'FAILED';
 }

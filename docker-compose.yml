@@ -1,78 +1,145 @@
+# =============================================================================
+# Docker Compose - Super CV Full Stack
+# Production-ready orchestration for all services
+# =============================================================================
+
 version: '3.8'
 
 services:
-  # 1. Database
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:15
-    container_name: supercv_postgres
+    image: postgres:15-alpine
+    container_name: supercv-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: supercv
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-supercv}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supercv_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-supercv}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
-      - app-network
+      - supercv-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supercv}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # 2. Redis Queue
+  # ---------------------------------------------------------------------------
+  # Redis (Queue & Cache)
+  # ---------------------------------------------------------------------------
   redis:
-    image: redis:alpine
-    container_name: supercv_redis
+    image: redis:7-alpine
+    container_name: supercv-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
     networks:
-      - app-network
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # 3. Backend API (NestJS)
+  # ---------------------------------------------------------------------------
+  # Backend (NestJS API)
+  # ---------------------------------------------------------------------------
   backend:
     build:
       context: ./apps/backend
-    container_name: supercv_backend
+      dockerfile: Dockerfile
+    container_name: supercv-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-supercv}:${POSTGRES_PASSWORD:-supercv_secret}@postgres:5432/${POSTGRES_DB:-supercv}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AI_ENGINE_URL: http://ai-engine:8000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "3001:3001"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres_password@postgres:5432/supercv?schema=public
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - AI_ENGINE_URL=http://ai-engine:8000
-    depends_on:
-      - postgres
-      - redis
     networks:
-      - app-network
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # 4. AI Engine (Python)
+  # ---------------------------------------------------------------------------
+  # AI Engine (Python FastAPI)
+  # ---------------------------------------------------------------------------
   ai-engine:
     build:
       context: ./apps/ai-engine
-    container_name: supercv_ai_engine
+      dockerfile: Dockerfile
+    container_name: supercv-ai-engine
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: 1
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      BACKEND_WEBHOOK_URL: http://backend:3001/cv/webhook
     ports:
       - "8000:8000"
-    environment:
-      # Ensure you have a .env file in the same folder with GEMINI_API_KEY=...
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
-      - app-network
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # 5. Frontend (Next.js)
+  # ---------------------------------------------------------------------------
+  # Frontend (Next.js)
+  # ---------------------------------------------------------------------------
   frontend:
     build:
       context: ./apps/frontend
-    container_name: supercv_frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      dockerfile: Dockerfile
+    container_name: supercv-frontend
+    restart: unless-stopped
     depends_on:
       - backend
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    ports:
+      - "3000:3000"
     networks:
-      - app-network
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+# =============================================================================
+# Networks
+# =============================================================================
 networks:
-  app-network:
+  supercv-network:
     driver: bridge
 
+# =============================================================================
+# Volumes (Persistent Data)
+# =============================================================================
 volumes:
   postgres_data:
+  redis_data:

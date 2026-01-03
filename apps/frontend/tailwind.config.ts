@@ -78,6 +78,23 @@ const config: Config = {
           "0%": { backgroundPosition: "200% 0" },
           "100%": { backgroundPosition: "-200% 0" },
         },
+        // New: Gentle pulse for loading states
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.02)" },
+        },
+        // New: Slide up for enter animations
+        "slide-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      // Icon sizes - Standardized across app
+      spacing: {
+        "icon-sm": "16px",
+        "icon-md": "20px",
+        "icon-lg": "24px",
+        "icon-xl": "32px",
       },
     },
   },
