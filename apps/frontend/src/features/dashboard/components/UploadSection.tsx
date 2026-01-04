@@ -5,6 +5,7 @@ import { UploadCloud, FileText, Link as LinkIcon, Sparkles, Loader2, X, FileChec
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { UpgradeModal } from "@/components/design-system/UpgradeModal";
 import { useAnalyzeMutation } from "@/features/analysis/api/useAnalysis";
@@ -56,7 +57,7 @@ export function UploadSection() {
           router.push(`/cv/${data.cvId}/analyze`);
         },
         onError: (error) => {
-          console.error("Analysis Error:", error.message);
+          toast.error(error.message || "Analysis failed. Please try again.");
           if (error.message.includes("credit") || error.message.includes("Credit")) {
             setShowUpgradeModal(true);
           }

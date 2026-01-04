@@ -62,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               token.id = dbUser.id;
               token.credits = dbUser.credits;
             }
-          } catch (e) { console.error("Sync failed", e); }
+          } catch { /* Sync failed - continue with OAuth token */ }
         }
       }
       return token;

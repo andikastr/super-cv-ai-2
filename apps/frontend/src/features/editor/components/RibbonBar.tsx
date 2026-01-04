@@ -55,7 +55,6 @@ export function RibbonBar({ printRef }: RibbonBarProps) {
     contentRef: printRef,
     documentTitle: "My_CV_Optimized",
     pageStyle: pageStyle,
-    onAfterPrint: () => console.log("Printed successfully"),
   });
 
   const colors = ["#000000", "#2563eb", "#dc2626", "#16a34a", "#d97706", "#7c3aed", "#db2777", "#0891b2"];

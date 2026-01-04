@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import {
     Sparkles, Loader2, Info, X,
     Zap, Check, Lock, Unlock, Target
@@ -65,7 +66,7 @@ export function AnalysisView({ analysisResult }: AnalysisViewProps) {
                 if (error.message.includes("credit") || error.message.includes("Credit")) {
                     setShowUpgradeModal(true);
                 } else {
-                    console.error("Unlock error:", error.message);
+                    toast.error(error.message || "Failed to unlock report");
                 }
             },
         });
@@ -78,7 +79,7 @@ export function AnalysisView({ analysisResult }: AnalysisViewProps) {
             {
                 onSuccess: () => router.push(`/cv/${cvId}/editor`),
                 onError: (error) => {
-                    console.error("AI Customization error:", error);
+                    toast.error("Customization failed. Please try again.");
                     setStickyMessage(null);
                 },
             }
