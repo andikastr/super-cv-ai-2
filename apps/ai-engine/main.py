@@ -37,16 +37,30 @@ async def analyze_endpoint(
     final_jd = ""
     if job_description and job_description.strip():
         final_jd = job_description
+
     elif job_url and job_url.strip():
         try:
             print(f"Fetching JD from URL: {job_url}")
-            final_jd = await scrape_job_with_jina(job_url)
+            # Mencoba scraping
+            scraped_text = await scrape_job_with_jina(job_url)
+            
+            # Validasi tambahan: Jika Jina return 200 OK tapi teks kosong
+            if not scraped_text or not scraped_text.strip():
+                raise ValueError("Website dapat diakses namun konten kosong/tidak terbaca.")
+                
+            final_jd = scraped_text
+
         except Exception as e:
-            print(f"Scraping warning: {e}")
-            final_jd = ""
+            print(f"Scraping Error: {e}")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Gagal mengambil Job Description dari URL. Pastikan link publik/valid. Error: {str(e)}"
+            )
     
+    # [LOGIC BARU] Prioritas 3: Fallback ke General Analysis HANYA jika tidak ada input sama sekali
+    # Blok ini tidak akan dieksekusi jika URL error, karena sudah terpotong oleh raise HTTPException di atas.
     if not final_jd:
-        final_jd = "General Tech Professional requirements (Assess based on standard industry best practices)."
+        final_jd = "AUTO_DETECT_ROLE"
 
     
     content = await file.read()

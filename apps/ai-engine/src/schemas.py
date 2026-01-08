@@ -17,8 +17,6 @@ class AnalysisResponse(BaseModel):
     skill_detail: str = Field(..., description="Feedback on hard/soft skills")
     experience_score: int = Field(..., description="Experience relevance score 0-100")
     experience_detail: str = Field(..., description="Feedback on seniority and projects")
-    keyword_score: int = Field(..., description="Keyword relevance score 0-100")
-    key_strengths: List[str] = Field(..., description="List of primary selling points")
     critical_gaps: List[CriticalGap] = Field(..., description="List of critical gaps with specific actionable advice")
 
 

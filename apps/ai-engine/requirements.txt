@@ -3,6 +3,6 @@ uvicorn
 python-multipart
 python-dotenv
 google-genai
-pypdf
+pdfplumber
 python-docx
 httpx

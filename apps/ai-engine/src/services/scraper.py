@@ -12,7 +12,7 @@ async def scrape_job_with_jina(url: str) -> str:
     async with httpx.AsyncClient() as client:
         try:
            
-            response = await client.get(jina_url, timeout=60.0)
+            response = await client.get(jina_url, timeout=120)
             
             if response.status_code != 200:
                 raise HTTPException(
