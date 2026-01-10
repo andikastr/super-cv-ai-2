@@ -38,6 +38,7 @@ export interface CvData {
     education: CvEducation[];
     projects: CvProject[];
     certifications?: string[];
+    section_labels?: Record<string, string>;
 }
 
 export interface DesignSettings {

@@ -70,6 +70,8 @@ async def extract_data_only(cv_text: str) -> ImprovedCVResult:
     RULES:
     1. DO NOT rewrite, improve, or change the content. Extract it exactly as is.
     2. If a field is missing, use an empty string "" or empty list [].
+    3. HYPERLINKS: If you find text in format "Text [URL]", render it as HTML: <a href='URL'>Text</a>.
+    4. Do not use markdown for links, use strictly HTML <a> tags.
     
     CV TEXT:
     {clean_cv}
@@ -265,6 +267,7 @@ async def customize_cv(cv_text: str, mode: str, context_data: str, current_date:
     *** CRITICAL RULES ***:
     1. **NO DELETION**: Preserve all work history.
     2. **NO HALLUCINATIONS**: Do not invent skills.
+    3. **LINKS**: Preserve all URLs. Convert "Text [URL]" to <a href='URL'>Text</a>.
     3. **DATE ACCURACY**: Ensure dates are formatted correctly relative to today ({current_date}). 
        If a job is current, ensure it is clear (e.g., "Jan 2024 - Present").
     4. **LANGUAGE CONSISTENCY (IMPORTANT)**: 
