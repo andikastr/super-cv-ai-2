@@ -46,25 +46,23 @@ export function EditableField({ value, onSave, className, tagName = "div", place
     }
   };
 
-  const Tag = tagName as React.ElementType;
-
-  return (
-    <Tag
-      ref={containerRef}
-      style={style}
-      className={cn(
-        "outline-none focus:bg-blue-50/50 focus:ring-1 focus:ring-blue-300 rounded px-1 transition-all min-w-[20px] empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400 cursor-text hover:bg-slate-50",
-        "[&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer [&_a]:hover:text-blue-800",
-        className
-      )}
-      contentEditable
-      suppressContentEditableWarning={true}
-      onBlur={handleBlur}
-      onClick={handleClick}
-      onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-      dangerouslySetInnerHTML={{ __html: content }}
-      data-placeholder={placeholder}
-      title="Ctrl+click to open links"
-    />
+  const combinedClassName = cn(
+    "outline-none focus:bg-blue-50/50 focus:ring-1 focus:ring-blue-300 rounded px-1 transition-all min-w-[20px] empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400 cursor-text hover:bg-slate-50",
+    "[&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer [&_a]:hover:text-blue-800",
+    className
   );
+
+  return React.createElement(tagName, {
+    ref: containerRef,
+    style,
+    className: combinedClassName,
+    contentEditable: true,
+    suppressContentEditableWarning: true,
+    onBlur: handleBlur,
+    onClick: handleClick,
+    onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+    dangerouslySetInnerHTML: { __html: content },
+    'data-placeholder': placeholder,
+    title: 'Ctrl+click to open links',
+  });
 }

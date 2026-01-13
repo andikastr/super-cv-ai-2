@@ -223,7 +223,13 @@ function SectionHeader({ title, onSave, design, className, Field, children }: {
   onSave: (val: string) => void;
   design: { accentColor: string };
   className?: string;
-  Field: React.ElementType;
+  Field: (props: {
+    value: string;
+    onSave: (val: string) => void;
+    className?: string;
+    tagName?: "h1" | "h2" | "h3" | "p" | "span" | "div";
+    style?: React.CSSProperties;
+  }) => React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
@@ -249,7 +255,13 @@ function renderProjects(
   uiOnly: string,
   preventBreak: string,
   keepWithNext: string,
-  Field: React.ElementType,
+  Field: (props: {
+    value: string;
+    onSave: (val: string) => void;
+    className?: string;
+    tagName?: "h1" | "h2" | "h3" | "p" | "span" | "div";
+    style?: React.CSSProperties;
+  }) => React.ReactNode,
   label: string,
   onLabelSave: (v: string) => void
 ) {
@@ -295,7 +307,13 @@ function renderEducation(
   uiOnly: string,
   preventBreak: string,
   keepWithNext: string,
-  Field: React.ElementType,
+  Field: (props: {
+    value: string;
+    onSave: (val: string) => void;
+    className?: string;
+    tagName?: "h1" | "h2" | "h3" | "p" | "span" | "div";
+    style?: React.CSSProperties;
+  }) => React.ReactNode,
   label: string,
   onLabelSave: (v: string) => void
 ) {

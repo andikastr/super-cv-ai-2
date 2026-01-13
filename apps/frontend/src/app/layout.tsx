@@ -4,11 +4,9 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
 import { AuthToast } from "@/components/auth-toast";
 import { Suspense } from "react";
-import { ScrollProgress } from "@/components/design-system/ScrollProgress";
 import { ThemeHydration } from "@/components/providers/ThemeHydration";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -61,24 +59,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={cn(
         "min-h-screen font-sans",
         inter.variable,
         playfair.variable
       )}>
-        <ScrollProgress />
         <AuthProvider>
           <QueryProvider>
             <ThemeHydration />
-            <Navbar />
-            <main className="pt-24 min-h-screen">
-              {children}
-              <Toaster position="top-center" richColors />
-              <Suspense fallback={null}>
-                <AuthToast />
-              </Suspense>
-            </main>
+            {children}
+            <Toaster position="top-center" richColors />
+            <Suspense fallback={null}>
+              <AuthToast />
+            </Suspense>
           </QueryProvider>
         </AuthProvider>
       </body>

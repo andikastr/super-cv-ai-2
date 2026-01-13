@@ -15,8 +15,6 @@ interface ReadOnlyFieldProps {
  * Renders HTML content with clickable hyperlinks.
  */
 export function ReadOnlyField({ value, className, tagName = "div", style }: ReadOnlyFieldProps) {
-    const Tag = tagName as React.ElementType;
-
     // Handle click on links to open in new tab
     const handleClick = (e: React.MouseEvent<HTMLElement>) => {
         const target = e.target as HTMLElement;
@@ -30,16 +28,17 @@ export function ReadOnlyField({ value, className, tagName = "div", style }: Read
         }
     };
 
-    return (
-        <Tag
-            style={style}
-            className={cn(
-                "px-1",
-                "[&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer [&_a]:hover:text-blue-800",
-                className
-            )}
-            onClick={handleClick}
-            dangerouslySetInnerHTML={{ __html: value }}
-        />
+    const combinedClassName = cn(
+        "px-1",
+        "[&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer [&_a]:hover:text-blue-800",
+        className
     );
+
+    return React.createElement(tagName, {
+        style,
+        className: combinedClassName,
+        onClick: handleClick,
+        dangerouslySetInnerHTML: { __html: value },
+    });
 }
+
