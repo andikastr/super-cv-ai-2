@@ -75,7 +75,7 @@ export function LandingNavbar() {
                         </Link>
 
                         <Link
-                            href="/register"
+                            href="/app"
                             className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
                         >
                             Get Started
@@ -122,7 +122,7 @@ export function LandingNavbar() {
                                 </Link>
 
                                 <Link
-                                    href="/register"
+                                    href="/app"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white font-semibold rounded-xl mt-2"
                                 >

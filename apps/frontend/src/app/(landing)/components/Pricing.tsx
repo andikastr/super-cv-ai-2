@@ -19,7 +19,7 @@ const plans = [
             'Email support',
         ],
         cta: 'Get Started',
-        href: '/register',
+        href: '/app',
         popular: false,
         gradient: 'from-slate-500 to-slate-600',
     },
@@ -38,7 +38,7 @@ const plans = [
             'Priority support',
         ],
         cta: 'Start Pro Trial',
-        href: '/register?plan=pro',
+        href: '/app?plan=pro',
         popular: true,
         gradient: 'from-[#2F6BFF] to-[#3CE0B1]',
     },
@@ -57,7 +57,7 @@ const plans = [
             'VIP support',
         ],
         cta: 'Get Lifetime Access',
-        href: '/register?plan=lifetime',
+        href: '/app?plan=lifetime',
         popular: false,
         gradient: 'from-purple-500 to-purple-600',
     },
@@ -126,8 +126,8 @@ export function Pricing() {
                                 whileHover={{ y: -8 }}
                                 transition={{ type: 'spring', stiffness: 300 }}
                                 className={`relative bg-white rounded-2xl p-8 h-full transition-all duration-300 ${plan.popular
-                                        ? 'border-2 border-[#2F6BFF] shadow-2xl'
-                                        : 'border border-slate-200 hover:border-slate-300 hover:shadow-xl'
+                                    ? 'border-2 border-[#2F6BFF] shadow-2xl'
+                                    : 'border border-slate-200 hover:border-slate-300 hover:shadow-xl'
                                     }`}
                             >
                                 {/* Popular badge */}
@@ -182,8 +182,8 @@ export function Pricing() {
                                 <Link
                                     href={plan.href}
                                     className={`group flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl font-semibold transition-all ${plan.popular
-                                            ? 'bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white hover:shadow-lg hover:shadow-[#2F6BFF]/25'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                        ? 'bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white hover:shadow-lg hover:shadow-[#2F6BFF]/25'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                         }`}
                                 >
                                     {plan.cta}

@@ -81,7 +81,7 @@ export function StoryHero() {
                                 className="flex flex-col sm:flex-row gap-4 mb-8"
                             >
                                 {/* Primary CTA - Glowing button */}
-                                <Link href="/register" className="group relative">
+                                <Link href="/app" className="group relative">
                                     {/* Glow effect */}
                                     <div className="absolute -inset-1 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] rounded-2xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
 

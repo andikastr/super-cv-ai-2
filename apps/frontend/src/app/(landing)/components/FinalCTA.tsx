@@ -70,7 +70,7 @@ export function FinalCTA() {
                         {/* CTA Button */}
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Link
-                                href="/register"
+                                href="/app"
                                 className="inline-flex items-center justify-center gap-2 bg-white text-[#2F6BFF] font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition-colors shadow-lg"
                             >
                                 Start Free Analysis
