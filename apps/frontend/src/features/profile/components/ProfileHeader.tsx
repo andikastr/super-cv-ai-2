@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Mail, Calendar, Camera, Loader2 } from "lucide-react";
+import { User, Mail, Calendar, Camera, Loader2, Sparkles } from "lucide-react";
 import type { UserProfile } from "../api/useProfile";
 
 interface ProfileHeaderProps {
@@ -30,19 +30,38 @@ export function ProfileHeader({ profile, onAvatarChange, isUploadingAvatar }: Pr
         input.click();
     };
 
+    // Get initials for avatar fallback
+    const getInitials = (name: string | null) => {
+        if (!name) return "U";
+        return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white overflow-hidden"
+            className="relative bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] rounded-3xl p-6 sm:p-8 text-white overflow-hidden"
         >
-            {/* Background pattern */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+            {/* Background decorations */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                        backgroundSize: '24px 24px',
+                    }}
+                />
+            </div>
 
             <div className="relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
                 {/* Avatar */}
                 <div className="relative group">
-                    <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/30 overflow-hidden relative">
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/40 overflow-hidden relative shadow-2xl"
+                    >
                         {profile.picture ? (
                             <img
                                 src={profile.picture}
@@ -50,40 +69,48 @@ export function ProfileHeader({ profile, onAvatarChange, isUploadingAvatar }: Pr
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <User size={36} className="text-white/70 sm:hidden" />
-                                <User size={48} className="text-white/70 hidden sm:block" />
+                            <div className="w-full h-full flex items-center justify-center bg-white/10 text-3xl font-bold">
+                                {getInitials(profile.name)}
                             </div>
                         )}
                         {/* Loading overlay */}
                         {isUploadingAvatar && (
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <Loader2 size={24} className="animate-spin text-white" />
+                                <Loader2 size={28} className="animate-spin text-white" />
                             </div>
                         )}
-                    </div>
-                    <button
+                    </motion.div>
+                    <motion.button
                         onClick={handleAvatarClick}
                         disabled={isUploadingAvatar}
-                        className="absolute bottom-0 right-0 w-7 h-7 sm:w-8 sm:h-8 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:scale-110 disabled:opacity-50"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="absolute bottom-0 right-0 w-9 h-9 bg-white text-[#2F6BFF] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50"
                         title="Change avatar"
                     >
-                        <Camera size={14} className="sm:hidden" />
-                        <Camera size={16} className="hidden sm:block" />
-                    </button>
+                        <Camera size={16} />
+                    </motion.button>
                 </div>
 
                 {/* Info */}
                 <div className="text-center sm:text-left flex-1">
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-1">
-                        {profile.name || "Anonymous User"}
-                    </h1>
-                    <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-white/80 text-xs sm:text-sm">
-                        <span className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                        <h1 className="text-2xl sm:text-3xl font-bold">
+                            {profile.name || "Anonymous User"}
+                        </h1>
+                        <motion.div
+                            animate={{ rotate: [0, 15, -15, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                        >
+                            <Sparkles size={20} className="text-white/80" />
+                        </motion.div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-white/80 text-sm">
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">
                             <Mail size={14} />
                             {profile.email}
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full backdrop-blur-sm">
                             <Calendar size={14} />
                             Member since {memberSince}
                         </span>

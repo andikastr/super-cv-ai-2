@@ -42,132 +42,144 @@ export function Navbar() {
         )}
       >
         <div className="max-w-7xl mx-auto">
-          <nav
-            className={cn(
-              "flex items-center justify-between px-4 sm:px-6 py-3 rounded-full transition-all duration-500",
-              isScrolled
-                ? "glass-panel shadow-lg"
-                : "bg-transparent border border-transparent"
-            )}
-          >
+          {/* Gradient border glow container */}
+          <div className="relative">
+            {/* Glow effect behind navbar */}
+            <div className={cn(
+              "absolute -inset-[1px] rounded-2xl opacity-0 transition-opacity duration-500",
+              "bg-gradient-to-r from-[#2F6BFF]/50 via-[#3CE0B1]/50 to-[#2F6BFF]/50",
+              isScrolled && "opacity-60 blur-sm"
+            )} />
 
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <Sparkles size={18} fill="currentColor" className="text-white" />
-              </div>
-              <span className="font-serif font-bold text-xl tracking-tight text-slate-900 dark:text-white">
-                Super<span className="text-[#2F6BFF] dark:text-[#3CE0B1]">CV</span>
-              </span>
-            </Link>
+            <nav
+              className={cn(
+                "relative flex items-center justify-between px-5 sm:px-6 py-3 rounded-2xl transition-all duration-500",
+                "bg-white/80 backdrop-blur-2xl backdrop-saturate-200",
+                "border border-white/50",
+                isScrolled
+                  ? "shadow-xl shadow-slate-900/10 border-white/60"
+                  : "shadow-lg shadow-slate-900/5"
+              )}
+            >
 
-
-            <div className="hidden md:flex items-center gap-8">
-              <NavLink href="/">Dashboard</NavLink>
-              <NavLink href="/pricing">Pricing</NavLink>
-              <NavLink href="/about">Methodology</NavLink>
-            </div>
-
-
-            <div className="hidden md:flex items-center gap-4">
-              <button
-                onClick={toggleTheme}
-                className="p-2.5 rounded-full glass-button transition-all duration-500"
-                aria-label="Toggle theme"
-                title={mode === 'auto' ? 'Auto (System)' : mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-              >
-                {mode === 'auto' ? (
-                  <Monitor size={18} className="text-indigo-500" />
-                ) : resolvedTheme === 'dark' ? (
-                  <Sun size={18} className="text-[#FFD84D]" />
-                ) : (
-                  <Moon size={18} className="text-slate-700" />
-                )}
-              </button>
-
-              {session ? (
-                <div className="flex items-center gap-3 pl-4 border-l border-black/10 dark:border-white/10">
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-3 group"
-                    title="View Profile"
-                  >
-                    <div className="text-right hidden lg:block">
-                      <p className="text-xs text-slate-500">Welcome,</p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">
-                        {userName?.split(" ")[0]}
-                      </p>
-                    </div>
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#2F6BFF] transition-all">
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt={userName || "Profile"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                          <User size={18} className="text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
-                    className="w-10 h-10 rounded-full glass-button flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 transition-all"
-                    title="Sign Out"
-                  >
-                    <LogOut size={16} />
-                  </button>
+              <Link href="/" className="flex items-center gap-2 group">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Sparkles size={18} fill="currentColor" className="text-white" />
                 </div>
-              ) : (
-                <Link href="/login" className="btn-primary">
-                  Sign In
-                </Link>
-              )}
-            </div>
+                <span className="font-serif font-bold text-xl tracking-tight text-slate-900 dark:text-white">
+                  Super<span className="text-[#2F6BFF] dark:text-[#3CE0B1]">CV</span>
+                </span>
+              </Link>
 
 
-            {/* Mobile header - show profile avatar + hamburger */}
-            <div className="md:hidden flex items-center gap-2">
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full glass-button transition-all duration-300"
-                aria-label="Toggle theme"
-              >
-                {mode === 'auto' ? (
-                  <Monitor size={16} className="text-indigo-500" />
-                ) : resolvedTheme === 'dark' ? (
-                  <Sun size={16} className="text-[#FFD84D]" />
-                ) : (
-                  <Moon size={16} className="text-slate-700" />
-                )}
-              </button>
+              <div className="hidden md:flex items-center gap-8">
+                <NavLink href="/">Dashboard</NavLink>
+                <NavLink href="/pricing">Pricing</NavLink>
+                <NavLink href="/about">Methodology</NavLink>
+              </div>
 
-              {/* Mobile profile avatar */}
-              {session && (
-                <Link href="/profile" className="w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-[#2F6BFF] transition-all">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={userName || "Profile"}
-                      className="w-full h-full object-cover"
-                    />
+
+              <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={toggleTheme}
+                  className="p-2.5 rounded-full glass-button transition-all duration-500"
+                  aria-label="Toggle theme"
+                  title={mode === 'auto' ? 'Auto (System)' : mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                >
+                  {mode === 'auto' ? (
+                    <Monitor size={18} className="text-indigo-500" />
+                  ) : resolvedTheme === 'dark' ? (
+                    <Sun size={18} className="text-[#FFD84D]" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                      <User size={14} className="text-white" />
-                    </div>
+                    <Moon size={18} className="text-slate-700" />
                   )}
-                </Link>
-              )}
+                </button>
 
-              <button
-                className="p-2 text-slate-900 dark:text-white"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X /> : <Menu />}
-              </button>
-            </div>
-          </nav>
+                {session ? (
+                  <div className="flex items-center gap-3 pl-4 border-l border-black/10 dark:border-white/10">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 group"
+                      title="View Profile"
+                    >
+                      <div className="text-right hidden lg:block">
+                        <p className="text-xs text-slate-500">Welcome,</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">
+                          {userName?.split(" ")[0]}
+                        </p>
+                      </div>
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent group-hover:border-[#2F6BFF] transition-all">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={userName || "Profile"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                            <User size={18} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/login" })}
+                      className="w-10 h-10 rounded-full glass-button flex items-center justify-center hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 transition-all"
+                      title="Sign Out"
+                    >
+                      <LogOut size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/login" className="btn-primary">
+                    Sign In
+                  </Link>
+                )}
+              </div>
+
+
+              {/* Mobile header - show profile avatar + hamburger */}
+              <div className="md:hidden flex items-center gap-2">
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full glass-button transition-all duration-300"
+                  aria-label="Toggle theme"
+                >
+                  {mode === 'auto' ? (
+                    <Monitor size={16} className="text-indigo-500" />
+                  ) : resolvedTheme === 'dark' ? (
+                    <Sun size={16} className="text-[#FFD84D]" />
+                  ) : (
+                    <Moon size={16} className="text-slate-700" />
+                  )}
+                </button>
+
+                {/* Mobile profile avatar */}
+                {session && (
+                  <Link href="/profile" className="w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-[#2F6BFF] transition-all">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={userName || "Profile"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                        <User size={14} className="text-white" />
+                      </div>
+                    )}
+                  </Link>
+                )}
+
+                <button
+                  className="p-2 text-slate-900 dark:text-white"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? <X /> : <Menu />}
+                </button>
+              </div>
+            </nav>
+          </div>
         </div>
       </header>
 

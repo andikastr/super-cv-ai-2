@@ -25,6 +25,10 @@ export interface UserCv {
     status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
     createdAt: string;
     updatedAt: string;
+    analysisResult?: {
+        candidate_name?: string;
+        overall_score?: number;
+    };
 }
 
 // Fetch functions

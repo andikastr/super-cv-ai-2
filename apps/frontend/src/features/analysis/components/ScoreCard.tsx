@@ -56,11 +56,24 @@ export function ScoreCard({ label, score, detail, onClick }: ScoreCardProps) {
                     </motion.div>
                 </div>
 
-                <div className="mb-2 relative z-10">
+                <div className="mb-4 relative z-10">
                     <span className={`text-4xl font-bold tracking-tight ${textColor}`}>
                         <OdometerCounter value={score} />
                     </span>
                     <span className="text-sm text-slate-400 dark:text-slate-500 font-medium ml-1">/100</span>
+
+                    {/* Mini progress bar */}
+                    <div className="mt-3 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score}%` }}
+                            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                            className={`h-full rounded-full ${score >= 80 ? "bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1]" :
+                                    score >= 60 ? "bg-gradient-to-r from-amber-400 to-amber-500" :
+                                        "bg-gradient-to-r from-red-400 to-red-500"
+                                }`}
+                        />
+                    </div>
                 </div>
 
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 h-9 relative z-10">

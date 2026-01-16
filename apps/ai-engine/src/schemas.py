@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 class CriticalGap(BaseModel):
     gap: str = Field(..., description="The specific missing skill or weakness (e.g., 'Docker', 'Leadership')")
@@ -55,7 +55,7 @@ class ImprovedCVResult(BaseModel):
     education: List[CVEducation]
     projects: List[CVProject]
     certifications: Optional[List[str]] = None
-    section_labels: Optional[dict] = Field(default_factory=lambda: {
+    section_labels: Optional[Dict[str, str]] = Field(default_factory=lambda: {
         "summary": "Professional Summary",
         "work_experience": "Work Experience",
         "technical_skills": "Technical Skills", 

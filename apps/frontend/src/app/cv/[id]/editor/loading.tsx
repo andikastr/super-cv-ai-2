@@ -1,62 +1,121 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FileEdit, Wand2, Layout, Type, Palette, Sparkles } from "lucide-react";
+import { FileEdit, Wand2, Layout, Type, Palette, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const features = [
+    { icon: Wand2, label: "AI Suggestions", delay: 0 },
+    { icon: Layout, label: "Smart Layout", delay: 0.2 },
+    { icon: Type, label: "Typography", delay: 0.4 },
+    { icon: Palette, label: "Color Themes", delay: 0.6 },
+];
+
+const steps = [
+    "Initializing editor",
+    "Loading your CV data",
+    "Preparing AI suggestions",
+    "Ready to edit!",
+];
 
 export default function EditorLoading() {
-    const features = [
-        { icon: Wand2, label: "AI Suggestions", delay: 0 },
-        { icon: Layout, label: "Smart Layout", delay: 0.2 },
-        { icon: Type, label: "Typography", delay: 0.4 },
-        { icon: Palette, label: "Color Themes", delay: 0.6 },
-    ];
+    const [currentStep, setCurrentStep] = useState(0);
+    const [progress, setProgress] = useState(0);
+
+    // Simulate step progression
+    useEffect(() => {
+        const stepInterval = setInterval(() => {
+            setCurrentStep((prev) => {
+                if (prev < steps.length - 1) {
+                    return prev + 1;
+                }
+                return prev;
+            });
+        }, 1500);
+
+        return () => clearInterval(stepInterval);
+    }, []);
+
+    // Simulate progress
+    useEffect(() => {
+        const progressInterval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev < 95) {
+                    return prev + Math.random() * 4;
+                }
+                return prev;
+            });
+        }, 150);
+
+        return () => clearInterval(progressInterval);
+    }, []);
 
     return (
-        <div className="fixed inset-0 bg-stone-50 dark:bg-slate-950 z-[100] flex flex-col items-center justify-center overflow-hidden transition-colors duration-300">
+        <div className="fixed inset-0 bg-gradient-to-b from-slate-50 to-white z-[100] flex flex-col items-center justify-center overflow-hidden">
+            {/* Background decorations */}
             <div className="absolute inset-0 pointer-events-none">
+                {/* Grid pattern */}
+                <div
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{
+                        backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
+                        backgroundSize: '32px 32px',
+                    }}
+                />
+
+                {/* Animated gradient orb */}
                 <motion.div
-                    animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360], opacity: [0.1, 0.2, 0.1] }}
+                    animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360], opacity: [0.15, 0.25, 0.15] }}
                     transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-conic from-[#2F6BFF]/10 via-[#3CE0B1]/5 to-[#2F6BFF]/10 dark:from-[#2F6BFF]/20 dark:via-[#3CE0B1]/10 dark:to-[#2F6BFF]/20 rounded-full blur-[100px]"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-conic from-[#2F6BFF]/10 via-[#3CE0B1]/5 to-[#2F6BFF]/10 rounded-full blur-[100px]"
                 />
 
                 <motion.div
                     animate={{ scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] }}
                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                    className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[80px]"
+                    className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#3CE0B1]/10 rounded-full blur-[80px]"
                 />
-
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(47,107,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(47,107,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
             </div>
 
-            <div className="relative z-10 flex flex-col items-center">
+            <div className="relative z-10 flex flex-col items-center max-w-md mx-auto px-6">
+                {/* Floating document illustration */}
                 <motion.div
-                    animate={{ rotateY: [-15, 15, -15], rotateX: [10, -5, 10] }}
+                    animate={{ rotateY: [-10, 10, -10], rotateX: [5, -5, 5] }}
                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                     className="relative mb-10"
                     style={{ perspective: 1000 }}
                 >
-                    <div className="absolute inset-0 w-36 h-44 bg-gradient-to-br from-[#2F6BFF]/30 to-[#3CE0B1]/30 dark:from-[#2F6BFF]/40 dark:to-[#3CE0B1]/40 rounded-2xl blur-2xl" />
+                    {/* Glow behind */}
+                    <div className="absolute inset-0 w-36 h-44 bg-gradient-to-br from-[#2F6BFF]/30 to-[#3CE0B1]/30 rounded-2xl blur-2xl" />
 
-                    <div className="relative w-36 h-44 bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col items-center justify-center overflow-hidden">
-                        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] flex items-center px-3 gap-1.5">
+                    {/* Document card */}
+                    <div className="relative w-36 h-44 bg-white rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
+                        {/* Header bar */}
+                        <div className="h-8 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] flex items-center px-3 gap-1.5">
                             <div className="w-2 h-2 rounded-full bg-white/30" />
                             <div className="w-2 h-2 rounded-full bg-white/30" />
                             <div className="w-2 h-2 rounded-full bg-white/30" />
                         </div>
 
-                        <div className="mt-6 space-y-2 w-full px-4">
-                            <motion.div animate={{ width: ["60%", "80%", "60%"] }} transition={{ duration: 2, repeat: Infinity }} className="h-2 bg-slate-200 dark:bg-white/20 rounded" />
-                            <motion.div animate={{ width: ["80%", "50%", "80%"] }} transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }} className="h-2 bg-slate-150 dark:bg-white/15 rounded" />
-                            <motion.div animate={{ width: ["50%", "70%", "50%"] }} transition={{ duration: 2.2, repeat: Infinity, delay: 0.6 }} className="h-2 bg-slate-100 dark:bg-white/10 rounded" />
-                            <motion.div animate={{ width: ["70%", "40%", "70%"] }} transition={{ duration: 1.8, repeat: Infinity, delay: 0.9 }} className="h-2 bg-slate-100 dark:bg-white/10 rounded" />
+                        {/* Animated lines */}
+                        <div className="flex-1 p-4 space-y-2">
+                            <motion.div animate={{ width: ["60%", "80%", "60%"] }} transition={{ duration: 2, repeat: Infinity }} className="h-2 bg-slate-100 rounded" />
+                            <motion.div animate={{ width: ["80%", "50%", "80%"] }} transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }} className="h-2 bg-slate-100 rounded" />
+                            <motion.div animate={{ width: ["50%", "70%", "50%"] }} transition={{ duration: 2.2, repeat: Infinity, delay: 0.6 }} className="h-2 bg-slate-100 rounded" />
+                            <motion.div animate={{ width: ["70%", "40%", "70%"] }} transition={{ duration: 1.8, repeat: Infinity, delay: 0.9 }} className="h-2 bg-slate-100 rounded" />
                         </div>
 
-                        <motion.div animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }} className="absolute bottom-4 right-4">
+                        {/* Sparkle animation */}
+                        <motion.div
+                            animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                            className="absolute bottom-4 right-4"
+                        >
                             <Sparkles size={20} className="text-[#2F6BFF]" />
                         </motion.div>
                     </div>
 
+                    {/* Floating edit badge */}
                     <motion.div
                         animate={{ y: [-5, 5, -5], rotate: [0, 10, 0] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -66,43 +125,104 @@ export default function EditorLoading() {
                     </motion.div>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-center mb-8">
-                    <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
+                {/* Title */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-center mb-8"
+                >
+                    <h2 className="text-3xl font-bold text-slate-900 mb-3">
                         Preparing Your Editor
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-400 text-base max-w-sm mx-auto leading-relaxed">
-                        Setting up your professional workspace with AI-powered tools
+                    <p className="text-slate-500 text-base">
+                        Setting up your professional workspace
                     </p>
                 </motion.div>
 
-                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-8 px-4 max-w-xs sm:max-w-none">
-                    {features.map((feature) => (
+                {/* Progress bar */}
+                <div className="w-full mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-600">{steps[currentStep]}</span>
+                        <span className="text-sm font-bold text-[#2F6BFF]">{Math.round(progress)}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                         <motion.div
-                            key={feature.label}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 + feature.delay }}
-                            className="flex flex-col items-center gap-1.5 sm:gap-2 w-16 sm:w-auto"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            className="h-full bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] rounded-full relative"
                         >
                             <motion.div
-                                animate={{ scale: [1, 1.1, 1], boxShadow: ["0 0 0 rgba(47,107,255,0)", "0 0 20px rgba(47,107,255,0.3)", "0 0 0 rgba(47,107,255,0)"] }}
-                                transition={{ duration: 2, repeat: Infinity, delay: feature.delay }}
-                                className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-100 dark:bg-white/5 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center"
-                            >
-                                <feature.icon size={18} className="text-[#2F6BFF] dark:text-[#3CE0B1] sm:w-5 sm:h-5" />
-                            </motion.div>
-                            <span className="text-[8px] sm:text-[10px] text-slate-500 font-medium uppercase tracking-wider text-center whitespace-nowrap">{feature.label}</span>
+                                animate={{ x: ["-100%", "200%"] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                            />
                         </motion.div>
+                    </div>
+                </div>
+
+                {/* Feature icons */}
+                <div className="flex items-center justify-center gap-4 mb-8">
+                    {features.map((feature, i) => {
+                        const isActive = i <= currentStep;
+                        return (
+                            <motion.div
+                                key={feature.label}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.5 + feature.delay }}
+                                className="flex flex-col items-center gap-2"
+                            >
+                                <motion.div
+                                    animate={isActive ? {
+                                        scale: [1, 1.1, 1],
+                                        boxShadow: ["0 0 0 rgba(47,107,255,0)", "0 0 20px rgba(47,107,255,0.4)", "0 0 0 rgba(47,107,255,0)"]
+                                    } : {}}
+                                    transition={{ duration: 2, repeat: Infinity, delay: feature.delay }}
+                                    className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 ${isActive
+                                            ? "bg-gradient-to-br from-[#2F6BFF]/10 to-[#3CE0B1]/10 border-[#2F6BFF]/30"
+                                            : "bg-slate-50 border-slate-200"
+                                        }`}
+                                >
+                                    <feature.icon
+                                        size={20}
+                                        className={isActive ? "text-[#2F6BFF]" : "text-slate-300"}
+                                    />
+                                </motion.div>
+                                <span className={`text-[10px] font-medium uppercase tracking-wider transition-colors ${isActive ? "text-[#2F6BFF]" : "text-slate-400"
+                                    }`}>
+                                    {feature.label}
+                                </span>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* Step indicators */}
+                <div className="flex items-center gap-2">
+                    {steps.map((step, i) => (
+                        <motion.div
+                            key={step}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.8 + i * 0.1 }}
+                            className={`w-2 h-2 rounded-full transition-all duration-300 ${i < currentStep ? "bg-[#3CE0B1]" :
+                                    i === currentStep ? "bg-[#2F6BFF] w-6" :
+                                        "bg-slate-200"
+                                }`}
+                        />
                     ))}
                 </div>
 
-                <div className="w-64 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div
-                        animate={{ x: ["-100%", "200%"] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-1/3 h-full bg-gradient-to-r from-transparent via-[#2F6BFF] to-transparent"
-                    />
-                </div>
+                {/* Fun tip */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.5 }}
+                    className="text-xs text-slate-400 mt-8 text-center"
+                >
+                    💡 Tip: Use our AI suggestions to optimize each section of your CV
+                </motion.p>
             </div>
         </div>
     );

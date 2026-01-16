@@ -124,21 +124,25 @@ export function UploadSection() {
   };
 
   const handleAnalyze = () => {
-    if (!file) return;
+    if (!file || analyzeMutation.isPending) return;
 
     // Start 3-second countdown before consuming tokens
     setCountdown(3);
+    let currentCount = 3;
 
     const tick = () => {
-      setCountdown(prev => {
-        if (prev === null || prev <= 1) {
-          if (countdownRef.current) clearInterval(countdownRef.current);
-          setCountdown(null);
-          startAnalysis();
-          return null;
+      currentCount -= 1;
+
+      if (currentCount <= 0) {
+        if (countdownRef.current) {
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
         }
-        return prev - 1;
-      });
+        setCountdown(null);
+        startAnalysis();
+      } else {
+        setCountdown(currentCount);
+      }
     };
 
     countdownRef.current = setInterval(tick, 1000);
@@ -166,42 +170,88 @@ export function UploadSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 backdrop-blur-md"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-10 text-center shadow-2xl max-w-sm mx-4"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-10 text-center shadow-2xl max-w-sm mx-4 border border-slate-100 dark:border-slate-800"
             >
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(47,107,255,0.4)]"
-              >
-                <span className="text-4xl font-bold text-white">{countdown}</span>
-              </motion.div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Preparing Analysis...</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-                Your CV will be analyzed in {countdown} second{countdown !== 1 ? 's' : ''}
-              </p>
-              <div className="flex flex-col gap-3">
-                <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: '100%' }}
-                    animate={{ width: '0%' }}
-                    transition={{ duration: 3, ease: 'linear' }}
-                    className="h-full bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] rounded-full"
+              {/* Animated countdown circle */}
+              <div className="relative w-28 h-28 mx-auto mb-6">
+                {/* Outer ring animation */}
+                <svg className="w-28 h-28 -rotate-90">
+                  <circle
+                    cx="56"
+                    cy="56"
+                    r="50"
+                    fill="none"
+                    stroke="#E2E8F0"
+                    strokeWidth="6"
                   />
-                </div>
-                <button
-                  onClick={cancelAnalysis}
-                  className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+                  <motion.circle
+                    cx="56"
+                    cy="56"
+                    r="50"
+                    fill="none"
+                    stroke="url(#gradient)"
+                    strokeWidth="6"
+                    strokeLinecap="round"
+                    initial={{ strokeDasharray: "314 314" }}
+                    animate={{ strokeDasharray: "0 314" }}
+                    transition={{ duration: 3, ease: "linear" }}
+                  />
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#2F6BFF" />
+                      <stop offset="100%" stopColor="#3CE0B1" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Center number */}
+                <motion.div
+                  key={countdown}
+                  initial={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="absolute inset-0 flex items-center justify-center"
                 >
-                  <X size={18} />
-                  Cancel Analysis
-                </button>
+                  <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1]">
+                    {countdown}
+                  </span>
+                </motion.div>
               </div>
+
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                Starting Analysis...
+              </h3>
+
+              {/* File info */}
+              {file && (
+                <div className="flex items-center justify-center gap-2 mb-4 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                  <FileText size={16} className="text-slate-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-300 truncate max-w-[180px]">
+                    {file.name}
+                  </span>
+                </div>
+              )}
+
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+                Analysis will begin in {countdown} second{countdown !== 1 ? 's' : ''}
+              </p>
+
+              <button
+                onClick={cancelAnalysis}
+                className="w-full px-6 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2 group"
+              >
+                <X size={18} className="group-hover:rotate-90 transition-transform" />
+                Cancel
+              </button>
+
+              <p className="text-xs text-slate-400 mt-4">
+                Cancel now - no credits will be used
+              </p>
             </motion.div>
           </motion.div>
         )}

@@ -90,6 +90,7 @@ export class UserService {
                 id: true,
                 fileUrl: true,
                 status: true,
+                analysisResult: true,
                 createdAt: true,
                 updatedAt: true,
             },
