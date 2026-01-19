@@ -40,10 +40,10 @@ export default function AnalyzePage() {
                         {error?.message || "We encountered an unexpected error while processing your document. Please try again."}
                     </p>
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={() => router.push("/app")}
                         className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                     >
-                        <ArrowLeft size={16} /> Return Home
+                        <ArrowLeft size={16} /> Return to My CVs
                     </button>
                 </Card>
             </div>

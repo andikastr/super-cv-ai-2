@@ -62,6 +62,7 @@ export function Navbar() {
               )}
             >
 
+              {/* Logo - Left */}
               <Link href="/" className="flex items-center gap-2 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Sparkles size={18} fill="currentColor" className="text-white" />
@@ -71,11 +72,10 @@ export function Navbar() {
                 </span>
               </Link>
 
-
-              <div className="hidden md:flex items-center gap-8">
-                <NavLink href="/">Dashboard</NavLink>
+              {/* Nav Links - Absolute Center */}
+              <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+                <NavLink href="/app">My CVs</NavLink>
                 <NavLink href="/pricing">Pricing</NavLink>
-                <NavLink href="/about">Methodology</NavLink>
               </div>
 
 
@@ -193,9 +193,8 @@ export function Navbar() {
             className="fixed inset-0 z-40 bg-stone-50/95 dark:bg-slate-950/95 backdrop-blur-2xl md:hidden flex flex-col items-center justify-center gap-8 transition-colors duration-300"
           >
             <div className="flex flex-col items-center gap-6 text-2xl font-serif">
-              <MobileLink href="/" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</MobileLink>
+              <MobileLink href="/app" onClick={() => setIsMobileMenuOpen(false)}>My CVs</MobileLink>
               <MobileLink href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</MobileLink>
-              <MobileLink href="/about" onClick={() => setIsMobileMenuOpen(false)}>Methodology</MobileLink>
             </div>
 
             <div className="mt-8 flex flex-col items-center gap-4">
@@ -226,11 +225,11 @@ export function Navbar() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
   return (
     <Link
       href={href}
-      className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative group"
+      className={`text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative group ${className || ''}`}
     >
       {children}
       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#2F6BFF] transition-all group-hover:w-full duration-300" />

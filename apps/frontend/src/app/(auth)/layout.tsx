@@ -1,18 +1,15 @@
 import { ReactNode } from 'react';
-import { Navbar } from '@/components/Navbar';
 
 /**
  * Auth Layout
  * 
- * Layout for auth pages (login, register) with app navbar.
+ * Clean layout for auth pages (login, register) without navbar.
+ * Auth pages have their own branding on the left panel.
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
     return (
-        <>
-            <Navbar />
-            <main className="pt-24 min-h-screen">
-                {children}
-            </main>
-        </>
+        <main className="min-h-screen">
+            {children}
+        </main>
     );
 }

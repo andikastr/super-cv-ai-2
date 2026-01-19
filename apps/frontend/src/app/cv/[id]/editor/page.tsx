@@ -56,10 +56,10 @@ export default function EditorPage() {
                         {error?.message || "Unable to load the editor workspace. Please try refreshing or re-uploading your document."}
                     </p>
                     <button
-                        onClick={() => router.push("/")}
+                        onClick={() => router.push("/app")}
                         className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                     >
-                        <ArrowLeft size={16} /> Return Dashboard
+                        <ArrowLeft size={16} /> Return to My CVs
                     </button>
                 </Card>
             </div>

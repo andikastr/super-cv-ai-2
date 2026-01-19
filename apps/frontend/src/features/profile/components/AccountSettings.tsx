@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Eye, EyeOff, Check, AlertCircle, Shield } from "lucide-react";
+import { Lock, Eye, EyeOff, Check, AlertCircle, Shield, Key } from "lucide-react";
 import { useChangePasswordMutation } from "../api/useProfile";
 
 interface AccountSettingsProps {
@@ -50,23 +50,29 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden"
+                whileHover={{ y: -2 }}
+                className="group bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 shadow-lg shadow-slate-200/80 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-[#2F6BFF]/30 h-full"
             >
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-[#2F6BFF]/5 to-[#3CE0B1]/5 rounded-full blur-2xl" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#2F6BFF]/5 to-[#3CE0B1]/5 rounded-2xl" />
+                </div>
 
                 <div className="relative">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2F6BFF]/10 to-[#3CE0B1]/10 flex items-center justify-center">
-                            <Shield size={20} className="text-[#2F6BFF]" />
-                        </div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <motion.div
+                            whileHover={{ scale: 1.1, rotate: -5 }}
+                            className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center shadow-lg shadow-[#2F6BFF]/20"
+                        >
+                            <Shield size={20} className="text-white" />
+                        </motion.div>
                         <div>
                             <h3 className="text-base font-bold text-slate-900 dark:text-white">Security</h3>
                             <p className="text-xs text-slate-500">Account protection</p>
                         </div>
                     </div>
-                    <div className="p-4 bg-[#2F6BFF]/5 rounded-xl border border-[#2F6BFF]/10">
+                    <div className="p-4 bg-gradient-to-r from-[#2F6BFF]/5 to-[#3CE0B1]/5 rounded-xl border border-[#2F6BFF]/10">
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                            You signed in with Google. Password management is handled by your Google account.
+                            🔒 You signed in with Google. Password is managed by your Google account.
                         </p>
                     </div>
                 </div>
@@ -79,20 +85,29 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-200 dark:border-slate-800 relative overflow-hidden"
+            whileHover={{ y: -2 }}
+            className="group bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 shadow-lg shadow-slate-200/80 dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-[#2F6BFF]/30 h-full"
         >
-            {/* Background decoration */}
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br from-[#2F6BFF]/5 to-[#3CE0B1]/5 rounded-full blur-2xl" />
+            {/* Hover gradient overlay */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#2F6BFF]/5 to-[#3CE0B1]/5 rounded-2xl" />
+            </div>
+
+            {/* Decorative orb */}
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-[#2F6BFF]/20 to-transparent rounded-full blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
 
             <div className="relative">
                 {/* Header */}
-                <div className="flex items-center gap-2 mb-5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2F6BFF]/10 to-[#3CE0B1]/10 flex items-center justify-center">
-                        <Lock size={20} className="text-[#2F6BFF]" />
-                    </div>
+                <div className="flex items-center gap-3 mb-5">
+                    <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center shadow-lg shadow-[#2F6BFF]/20"
+                    >
+                        <Key size={20} className="text-white" />
+                    </motion.div>
                     <div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">Password</h3>
-                        <p className="text-xs text-slate-500">Update your password</p>
+                        <p className="text-xs text-slate-500">Update credentials</p>
                     </div>
                 </div>
 
@@ -107,13 +122,13 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
                                 type={showCurrentPassword ? "text" : "password"}
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F6BFF] focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 pr-10 border-2 border-slate-100 dark:border-slate-700 rounded-xl bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-[#2F6BFF] transition-all"
                                 placeholder="Enter current password"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2F6BFF] transition-colors"
                             >
                                 {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
@@ -130,13 +145,13 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
                                 type={showNewPassword ? "text" : "password"}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-4 py-2.5 pr-10 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F6BFF] focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 pr-10 border-2 border-slate-100 dark:border-slate-700 rounded-xl bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-[#2F6BFF] transition-all"
                                 placeholder="Min 6 characters"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowNewPassword(!showNewPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2F6BFF] transition-colors"
                             >
                                 {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
@@ -146,20 +161,20 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
                     {/* Confirm Password */}
                     <div>
                         <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">
-                            Confirm New Password
+                            Confirm Password
                         </label>
                         <input
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={`w-full px-4 py-2.5 border rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2F6BFF] focus:border-transparent transition-all ${confirmPassword.length > 0 && !passwordsMatch
-                                    ? "border-red-300 dark:border-red-600"
-                                    : "border-slate-200 dark:border-slate-700"
+                            className={`w-full px-4 py-3 border-2 rounded-xl bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:border-[#2F6BFF] transition-all ${confirmPassword.length > 0 && !passwordsMatch
+                                ? "border-red-300 dark:border-red-600"
+                                : "border-slate-100 dark:border-slate-700"
                                 }`}
                             placeholder="Confirm new password"
                         />
                         {confirmPassword.length > 0 && !passwordsMatch && (
-                            <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
                                 <AlertCircle size={12} />
                                 Passwords do not match
                             </p>
@@ -168,18 +183,26 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
 
                     {/* Error message */}
                     {changePasswordMutation.isError && (
-                        <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-500/10 p-3 rounded-xl">
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-500/10 p-3 rounded-xl"
+                        >
                             <AlertCircle size={16} />
                             {changePasswordMutation.error?.message || "Failed to change password"}
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* Success message */}
                     {successMessage && (
-                        <div className="flex items-center gap-2 text-[#3CE0B1] text-sm bg-[#3CE0B1]/10 p-3 rounded-xl">
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 text-[#3CE0B1] text-sm bg-[#3CE0B1]/10 p-3 rounded-xl"
+                        >
                             <Check size={16} />
                             {successMessage}
-                        </div>
+                        </motion.div>
                     )}
 
                     {/* Submit button */}
@@ -188,7 +211,7 @@ export function AccountSettings({ userId, hasPassword }: AccountSettingsProps) {
                         disabled={!isValid || changePasswordMutation.isPending}
                         whileHover={isValid ? { scale: 1.02 } : {}}
                         whileTap={isValid ? { scale: 0.98 } : {}}
-                        className="w-full py-3 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all"
+                        className="w-full py-3 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] hover:shadow-lg hover:shadow-[#2F6BFF]/25 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all"
                     >
                         {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
                     </motion.button>
