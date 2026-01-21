@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Caddy (Reverse Proxy & Auto SSL)
+  # ---------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: supercv-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - supercv-network
+    depends_on:
+      - backend
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: supercv-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - supercv-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: supercv-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Backend (NestJS API)
+  # ---------------------------------------------------------------------------
+  backend:
+    image: ghcr.io/${GITHUB_USERNAME}/super-cv-backend:latest
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: supercv-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AI_ENGINE_URL: http://ai-engine:8000
+      # IMPORTANT: Allow Vercel frontend to access this backend
+      FRONTEND_URL: ${FRONTEND_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      MAYAR_API_KEY: ${MAYAR_API_KEY}
+      MAYAR_WEBHOOK_TOKEN: ${MAYAR_WEBHOOK_TOKEN}
+      BACKEND_URL: ${BACKEND_URL:-https://${DOMAIN_NAME}}
+    networks:
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # AI Engine (Python FastAPI)
+  # ---------------------------------------------------------------------------
+  ai-engine:
+    image: ghcr.io/${GITHUB_USERNAME}/super-cv-ai-engine:latest
+    build:
+      context: ./apps/ai-engine
+      dockerfile: Dockerfile
+    container_name: supercv-ai-engine
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      BACKEND_WEBHOOK_URL: http://backend:3001/cv/webhook
+    networks:
+      - supercv-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  supercv-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:
