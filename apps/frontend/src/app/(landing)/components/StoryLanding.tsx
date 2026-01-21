@@ -63,13 +63,13 @@ export default function StoryLanding() {
             </main>
 
             {/* Footer */}
-            <footer className="pt-20 pb-8 px-6 bg-slate-50 text-slate-600 relative overflow-hidden">
+            <footer className="pt-16 pb-8 px-6 bg-slate-50 text-slate-600 relative overflow-hidden">
                 <div className="container mx-auto relative z-10">
                     {/* Main Footer Content */}
-                    <div className="flex flex-col lg:flex-row gap-12 mb-16">
-                        {/* Left: Brand */}
-                        <div className="lg:w-1/3">
-                            <Link href="/" className="flex items-center gap-2 mb-4">
+                    <div className="flex flex-col items-center text-center lg:flex-row lg:items-start lg:text-left gap-8 lg:gap-12 mb-12">
+                        {/* Brand */}
+                        <div className="flex flex-col items-center lg:items-start lg:flex-1">
+                            <Link href="/" className="flex items-center gap-2 mb-3">
                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2F6BFF] to-[#3CE0B1] flex items-center justify-center">
                                     <Sparkles size={16} className="text-white" />
                                 </div>
@@ -82,22 +82,23 @@ export default function StoryLanding() {
                             </p>
                         </div>
 
-                        {/* Right: Product Links */}
-                        <div className="lg:flex-1 flex justify-center lg:justify-end">
-                            <div>
-                                <h4 className="font-semibold text-slate-900 mb-4">Product</h4>
-                                <ul className="space-y-3 text-sm">
-                                    <li><a href="#demo" className="hover:text-[#2F6BFF] transition-colors">How It Works</a></li>
-                                    <li><a href="#features" className="hover:text-[#2F6BFF] transition-colors">Features</a></li>
-                                    <li><a href="#pricing" className="hover:text-[#2F6BFF] transition-colors">Pricing</a></li>
-                                    <li><a href="#faq" className="hover:text-[#2F6BFF] transition-colors">FAQ</a></li>
-                                </ul>
-                            </div>
+                        {/* Product Links */}
+                        <div>
+                            <h4 className="font-semibold text-slate-900 mb-3">Product</h4>
+                            <ul className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-sm lg:flex-col lg:gap-y-3 lg:gap-x-0">
+                                <li><a href="#demo" className="hover:text-[#2F6BFF] transition-colors">How It Works</a></li>
+                                <li><a href="#features" className="hover:text-[#2F6BFF] transition-colors">Features</a></li>
+                                <li><a href="#pricing" className="hover:text-[#2F6BFF] transition-colors">Pricing</a></li>
+                                <li><a href="#faq" className="hover:text-[#2F6BFF] transition-colors">FAQ</a></li>
+                            </ul>
                         </div>
                     </div>
 
+                    {/* Divider */}
+                    <div className="h-px bg-slate-200 mb-6" />
+
                     {/* Copyright */}
-                    <div className="text-sm text-slate-500 mb-8">
+                    <div className="text-sm text-slate-500 text-center">
                         © 2026 Super CV - All Rights Reserved
                     </div>
                 </div>

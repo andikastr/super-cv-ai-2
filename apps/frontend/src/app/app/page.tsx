@@ -361,16 +361,38 @@ export default function AppHome() {
                         </motion.div>
                     )}
 
-                    {/* Process Steps - Creative horizontal timeline */}
+                    {/* Process Steps - Compact on mobile, expanded on desktop */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-12"
+                        className="mb-10"
                     >
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+                        {/* Mobile: Compact horizontal steps */}
+                        <div className="flex md:hidden justify-center items-center gap-2">
                             {processSteps.map((step, index) => (
                                 <div key={step.step} className="flex items-center">
-                                    {/* Step card */}
+                                    <div className="flex flex-col items-center gap-1.5">
+                                        <div
+                                            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
+                                            style={{ backgroundColor: `${step.color}15` }}
+                                        >
+                                            <step.icon size={22} style={{ color: step.color }} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-500">
+                                            {step.title}
+                                        </span>
+                                    </div>
+                                    {index < processSteps.length - 1 && (
+                                        <div className="w-8 h-0.5 bg-gradient-to-r from-slate-200 to-slate-100 mx-1" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop: Full cards */}
+                        <div className="hidden md:flex items-center justify-center gap-0">
+                            {processSteps.map((step, index) => (
+                                <div key={step.step} className="flex items-center">
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
@@ -378,20 +400,15 @@ export default function AppHome() {
                                         whileHover={{ y: -4 }}
                                         className="relative group"
                                     >
-                                        {/* Glow effect on hover */}
                                         <div
                                             className="absolute -inset-1 rounded-2xl opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-300"
                                             style={{ background: `linear-gradient(135deg, ${step.color}40, ${step.color}15)` }}
                                         />
-
                                         <div className="relative flex items-center gap-4 px-6 py-4 bg-white rounded-2xl border-2 border-slate-200/80 shadow-md group-hover:shadow-xl group-hover:border-transparent transition-all overflow-hidden">
-                                            {/* Colored left accent bar */}
                                             <div
                                                 className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
                                                 style={{ backgroundColor: step.color }}
                                             />
-
-                                            {/* Icon with pulse animation */}
                                             <motion.div
                                                 whileHover={{ scale: 1.1, rotate: 5 }}
                                                 className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
@@ -399,8 +416,6 @@ export default function AppHome() {
                                             >
                                                 <step.icon size={22} style={{ color: step.color }} />
                                             </motion.div>
-
-                                            {/* Text */}
                                             <div>
                                                 <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: step.color }}>Step {step.step}</p>
                                                 <h3 className="font-bold text-slate-900">{step.title}</h3>
@@ -408,10 +423,8 @@ export default function AppHome() {
                                             </div>
                                         </div>
                                     </motion.div>
-
-                                    {/* Connector - animated gradient line */}
                                     {index < processSteps.length - 1 && (
-                                        <div className="hidden md:flex items-center px-3">
+                                        <div className="flex items-center px-3">
                                             <motion.div
                                                 initial={{ scaleX: 0 }}
                                                 animate={{ scaleX: 1 }}

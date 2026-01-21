@@ -241,6 +241,49 @@ html.dark body::before {
     text-wrap: balance;
   }
 
+  /* Typography Scale - Consistent headings */
+  .heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight;
+  }
+
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold tracking-tight leading-tight;
+  }
+
+  .heading-md {
+    @apply text-2xl md:text-3xl font-bold tracking-tight;
+  }
+
+  .heading-sm {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+
+  .heading-xs {
+    @apply text-lg font-semibold;
+  }
+
+  /* Body text sizes */
+  .text-body-lg {
+    @apply text-lg leading-relaxed;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed;
+  }
+
+  .text-body-sm {
+    @apply text-sm leading-relaxed;
+  }
+
+  .text-caption {
+    @apply text-xs text-slate-500 dark:text-slate-400;
+  }
+
+  /* Label styles */
+  .label {
+    @apply text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+  }
+
   /* Shadow utilities using design tokens */
   .shadow-layer-xs {
     box-shadow: var(--shadow-xs);

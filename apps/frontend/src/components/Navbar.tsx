@@ -190,31 +190,56 @@ export function Navbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-stone-50/95 dark:bg-slate-950/95 backdrop-blur-2xl md:hidden flex flex-col items-center justify-center gap-8 transition-colors duration-300"
+            className="fixed inset-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl md:hidden flex flex-col items-center justify-center gap-6 transition-colors duration-300"
           >
-            <div className="flex flex-col items-center gap-6 text-2xl font-serif">
-              <MobileLink href="/app" onClick={() => setIsMobileMenuOpen(false)}>My CVs</MobileLink>
-              <MobileLink href="/pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</MobileLink>
+            {/* Nav Links */}
+            <div className="flex flex-col items-center gap-5">
+              <Link
+                href="/app"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xl font-semibold text-slate-900 dark:text-white hover:text-[#2F6BFF] dark:hover:text-[#3CE0B1] transition-colors"
+              >
+                My CVs
+              </Link>
+              <Link
+                href="/pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-xl font-semibold text-slate-900 dark:text-white hover:text-[#2F6BFF] dark:hover:text-[#3CE0B1] transition-colors"
+              >
+                Pricing
+              </Link>
             </div>
 
-            <div className="mt-8 flex flex-col items-center gap-4">
+            {/* Divider */}
+            <div className="w-16 h-px bg-slate-200 dark:bg-slate-700" />
+
+            {/* Auth Section */}
+            <div className="flex flex-col items-center gap-4">
               {session ? (
                 <>
-                  <MobileLink href="/profile" onClick={() => setIsMobileMenuOpen(false)}>Profile</MobileLink>
-                  <button
-                    onClick={() => signOut()}
-                    className="px-8 py-3 rounded-full btn-ghost flex items-center gap-2"
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 text-lg font-medium text-slate-600 dark:text-slate-400 hover:text-[#2F6BFF] dark:hover:text-[#3CE0B1] transition-colors"
                   >
-                    <LogOut size={18} /> Sign Out
+                    <User size={20} />
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:scale-105 transition-all"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
                   </button>
                 </>
               ) : (
                 <Link
                   href="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="btn-primary"
+                  className="px-8 py-3 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-all"
                 >
-                  Sign In / Register
+                  Sign In
                 </Link>
               )}
             </div>

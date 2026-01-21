@@ -145,33 +145,36 @@ export function Testimonials() {
                     ))}
                 </div>
 
-                {/* Trust Stats */}
+                {/* Trust Stats - Clean horizontal bar */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ delay: 0.6 }}
-                    className="flex flex-wrap justify-center gap-6 mt-16"
+                    className="mt-20"
                 >
-                    {stats.map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                            transition={{ delay: 0.7 + i * 0.1 }}
-                            className="flex items-center gap-3 px-6 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-shadow"
-                        >
-                            <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                                style={{ backgroundColor: `${stat.color}15` }}
-                            >
-                                <stat.icon size={20} style={{ color: stat.color }} />
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</div>
-                                <div className="text-xs text-slate-500">{stat.label}</div>
-                            </div>
-                        </motion.div>
-                    ))}
+                    <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-100 shadow-xl px-4 py-8 md:py-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8 md:gap-0">
+                            {stats.map((stat, i) => (
+                                <motion.div
+                                    key={stat.label}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                                    transition={{ delay: 0.7 + i * 0.1 }}
+                                    className={`flex flex-col items-center justify-center text-center relative ${i < stats.length - 1 ? 'md:border-r md:border-slate-100' : ''
+                                        }`}
+                                >
+                                    <div
+                                        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                                        style={{ backgroundColor: `${stat.color}10` }}
+                                    >
+                                        <stat.icon size={24} style={{ color: stat.color }} />
+                                    </div>
+                                    <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">{stat.value}</div>
+                                    <div className="text-sm text-slate-500 font-medium">{stat.label}</div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
                 </motion.div>
             </div>
         </section>
