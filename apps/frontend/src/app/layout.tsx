@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -75,6 +76,32 @@ export default function RootLayout({
             </Suspense>
           </QueryProvider>
         </AuthProvider>
+
+        {/* Dify AI Career Coach Chatbot */}
+        <Script id="dify-config" strategy="lazyOnload">
+          {`
+            window.difyChatbotConfig = {
+              token: 'lW6CLN40cB6KdrxB',
+              inputs: {},
+              systemVariables: {},
+              userVariables: {},
+            }
+          `}
+        </Script>
+        <Script
+          src="https://udify.app/embed.min.js"
+          id="lW6CLN40cB6KdrxB"
+          strategy="lazyOnload"
+        />
+        <style jsx global>{`
+          #dify-chatbot-bubble-button {
+            background-color: #1C64F2 !important;
+          }
+          #dify-chatbot-bubble-window {
+            width: 24rem !important;
+            height: 40rem !important;
+          }
+        `}</style>
       </body>
     </html>
   );
