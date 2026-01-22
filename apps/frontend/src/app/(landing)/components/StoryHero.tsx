@@ -25,7 +25,7 @@ export function StoryHero() {
 
     return (
         <AnimatedGradient className="relative min-h-screen flex items-center bg-gradient-to-b from-white via-slate-50 to-white">
-            <section ref={containerRef} className="relative w-full py-20 lg:py-0">
+            <section ref={containerRef} className="w-full py-20 lg:py-0">
                 {/* Background Effects */}
                 <GlowOrbs />
                 <GridPattern />
@@ -49,30 +49,17 @@ export function StoryHero() {
                                 <span>AI-Powered CV Optimization</span>
                             </motion.div>
 
-                            {/* Headline - Animation with CSS fallback for visibility */}
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight overflow-visible">
-                                <motion.span
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.3 }}
-                                    className="block"
-                                    style={{ opacity: 1 }} // CSS fallback
-                                >
+                            {/* Headline */}
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                                <TextSplit delay={0.3}>
                                     Stop Getting Rejected.
-                                </motion.span>
-                                <motion.span
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.6 }}
-                                    className="block py-1 text-transparent bg-clip-text bg-gradient-to-r from-[#2F6BFF] via-[#3CE0B1] to-[#2F6BFF]"
-                                    style={{
-                                        opacity: 1, // CSS fallback
-                                        WebkitBackgroundClip: 'text',
-                                        backgroundClip: 'text',
-                                    }}
-                                >
-                                    Start Getting Hired.
-                                </motion.span>
+                                </TextSplit>
+                                <br />
+                                <span className="text-gradient-primary">
+                                    <TextSplit delay={0.6}>
+                                        Start Getting Hired.
+                                    </TextSplit>
+                                </span>
                             </h1>
 
                             {/* Description */}

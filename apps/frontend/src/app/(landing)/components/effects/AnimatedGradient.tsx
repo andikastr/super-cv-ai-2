@@ -15,7 +15,7 @@ interface AnimatedGradientProps {
  */
 export function AnimatedGradient({ children, className = '' }: AnimatedGradientProps) {
     return (
-        <div className={`relative overflow-x-hidden ${className}`}>
+        <div className={`relative overflow-hidden ${className}`}>
             {/* Animated gradient blobs */}
             <div className="absolute inset-0 -z-10">
                 <motion.div
