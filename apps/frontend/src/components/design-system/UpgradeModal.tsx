@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, X } from "lucide-react";
+import { Crown } from "lucide-react";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative"
+            className="bg-white dark:bg-slate-900 border border-[#2F6BFF]/30 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-8 text-center">
@@ -24,14 +24,14 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
               </div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Credits Exhausted</h2>
               <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-                Upgrade to <span className="text-amber-600 dark:text-amber-400 font-bold">Pro</span> to unlock unlimited AI analysis.
+                You've used all your credits. Purchase more to continue analyzing CVs.
               </p>
               <div className="space-y-3">
                 <button
                   onClick={() => window.location.href = '/pricing'}
                   className="w-full py-3.5 bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1] text-white font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-lg"
                 >
-                  Upgrade Now ($9/mo)
+                  Buy Credits
                 </button>
                 <button
                   onClick={onClose}
