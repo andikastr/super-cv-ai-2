@@ -138,44 +138,6 @@ export default function AppHome() {
     // Fetch real CV data
     const { data: cvs, isLoading } = useUserCvsQuery(userId || null);
 
-    // Dify Chatbot - Dynamic script injection
-    useEffect(() => {
-        const difyToken = process.env.NEXT_PUBLIC_DIFY_TOKEN;
-
-        // Skip if no token configured
-        if (!difyToken) {
-            console.warn('Dify chatbot token not configured. Set NEXT_PUBLIC_DIFY_TOKEN in your environment.');
-            return;
-        }
-
-        // Set config first (must be set before script loads)
-        (window as any).difyChatbotConfig = {
-            token: difyToken,
-            inputs: {},
-            systemVariables: {},
-            userVariables: {},
-        };
-
-        // Check if script already exists
-        if (!document.getElementById(difyToken)) {
-            const script = document.createElement('script');
-            script.src = 'https://udify.app/embed.min.js';
-            script.id = difyToken; // ID must match the token
-            script.defer = true;
-            document.body.appendChild(script);
-        }
-
-        // Cleanup on unmount
-        return () => {
-            const script = document.getElementById(difyToken);
-            if (script) script.remove();
-            const bubble = document.getElementById('dify-chatbot-bubble-button');
-            const chatWindow = document.getElementById('dify-chatbot-bubble-window');
-            if (bubble) bubble.remove();
-            if (chatWindow) chatWindow.remove();
-        };
-    }, []);
-
     // Get only completed CVs with real analysis scores
     const recentAnalyses = cvs
         ?.filter(cv => cv.status === "COMPLETED")
@@ -254,7 +216,13 @@ export default function AppHome() {
                                 className="mb-8 text-center"
                             >
                                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                                    {getGreeting()}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2F6BFF] to-[#3CE0B1]">{userName || "there"}</span>! 👋
+                                    {getGreeting()}, <span style={{
+                                        background: 'linear-gradient(90deg, #2F6BFF, #3CE0B1)',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                        color: '#2F6BFF', // Fallback
+                                    }}>{userName || "there"}</span>! 👋
                                 </h1>
                                 <p className="text-slate-500 mt-2">Ready to optimize your CV for your dream job?</p>
                             </motion.div>

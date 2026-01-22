@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { DifyChatbot } from "@/components/DifyChatbot";
 
 export default function AppLayout({
     children,
@@ -12,6 +13,8 @@ export default function AppLayout({
             <main className="pt-24">
                 {children}
             </main>
+            {/* Dify AI Career Coach Chatbot */}
+            <DifyChatbot />
         </>
     );
 }

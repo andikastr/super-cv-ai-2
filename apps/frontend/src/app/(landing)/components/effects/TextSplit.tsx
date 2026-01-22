@@ -19,7 +19,7 @@ export function TextSplit({ children, className = '', delay = 0, wordDelay = 0.0
     const words = children.split(' ');
 
     return (
-        <span className={className}>
+        <span>
             {words.map((word, index) => (
                 <motion.span
                     key={index}
@@ -30,7 +30,7 @@ export function TextSplit({ children, className = '', delay = 0, wordDelay = 0.0
                         delay: delay + index * wordDelay,
                         ease: [0.25, 0.1, 0.25, 1],
                     }}
-                    className="inline-block mr-[0.25em]"
+                    className={`inline-block mr-[0.25em] ${className}`}
                 >
                     {word}
                 </motion.span>

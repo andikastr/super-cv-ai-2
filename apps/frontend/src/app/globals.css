@@ -218,10 +218,14 @@ html.dark body::before {
 
 
   .text-gradient-primary {
-    @apply bg-clip-text text-transparent font-bold;
-    @apply bg-gradient-to-r from-[#2F6BFF] via-[#3CE0B1] to-[#2F6BFF];
-    @apply dark:from-[#3CE0B1] dark:via-[#2F6BFF] dark:to-[#3CE0B1];
-    filter: drop-shadow(0 0 20px rgba(47, 107, 255, 0.3));
+    @apply font-bold;
+    /* Fallback solid color for browsers that don't support gradient text */
+    color: #2F6BFF;
+    /* Gradient text for supporting browsers */
+    background: linear-gradient(90deg, #2F6BFF, #3CE0B1, #2F6BFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .shimmer {
@@ -572,12 +576,114 @@ html.dark body::before {
   }
 }
 
-/* Dify AI Career Coach Chatbot */
+/* ============================================
+   Dify AI Career Coach Chatbot - Premium Styling
+   ============================================ */
+
+/* Floating Chat Button */
 #dify-chatbot-bubble-button {
-  background-color: #1C64F2 !important;
+  background: linear-gradient(135deg, #2F6BFF 0%, #1C64F2 50%, #3CE0B1 100%) !important;
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  box-shadow:
+    0 4px 20px rgba(47, 107, 255, 0.4),
+    0 8px 32px rgba(60, 224, 177, 0.2),
+    0 0 0 4px rgba(47, 107, 255, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  animation: dify-pulse 3s ease-in-out infinite !important;
 }
 
+#dify-chatbot-bubble-button:hover {
+  transform: scale(1.1) !important;
+  box-shadow:
+    0 6px 28px rgba(47, 107, 255, 0.5),
+    0 12px 40px rgba(60, 224, 177, 0.3),
+    0 0 0 6px rgba(47, 107, 255, 0.15) !important;
+}
+
+/* HIDDEN BY DEFAULT GLOBALLY */
+/* The chatbot should only appear on the /app pages (managed by DifyChatbot.tsx adding class) */
+body:not(.dify-chat-enabled) #dify-chatbot-bubble-button,
+body:not(.dify-chat-enabled) #dify-chatbot-bubble-window {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+#dify-chatbot-bubble-button:active {
+  transform: scale(0.95) !important;
+}
+
+/* Chat Window - Force Light Theme */
 #dify-chatbot-bubble-window {
-  width: 24rem !important;
-  height: 40rem !important;
+  width: 400px !important;
+  height: 600px !important;
+  max-height: 80vh !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(47, 107, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  overflow: hidden !important;
+  animation: dify-slide-up 0.3s ease-out !important;
+  /* Force light theme regardless of system preference */
+  color-scheme: light !important;
+}
+
+/* Force light color scheme on iframe */
+#dify-chatbot-bubble-window iframe {
+  color-scheme: light !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  #dify-chatbot-bubble-window {
+    width: calc(100vw - 32px) !important;
+    height: 70vh !important;
+    max-height: 70vh !important;
+    right: 16px !important;
+    bottom: 80px !important;
+    border-radius: 16px !important;
+  }
+
+  #dify-chatbot-bubble-button {
+    width: 56px !important;
+    height: 56px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+  }
+}
+
+/* Animations */
+@keyframes dify-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 4px 20px rgba(47, 107, 255, 0.4),
+      0 8px 32px rgba(60, 224, 177, 0.2),
+      0 0 0 4px rgba(47, 107, 255, 0.1);
+  }
+
+  50% {
+    box-shadow:
+      0 4px 20px rgba(47, 107, 255, 0.6),
+      0 8px 32px rgba(60, 224, 177, 0.35),
+      0 0 0 8px rgba(47, 107, 255, 0.05);
+  }
+}
+
+@keyframes dify-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

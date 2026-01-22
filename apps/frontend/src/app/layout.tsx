@@ -59,8 +59,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const difyToken = process.env.NEXT_PUBLIC_DIFY_TOKEN;
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Dify Chatbot - loaded in head for proper initialization */}
+        {difyToken && (
+          <>
+            <Script id="dify-config" strategy="beforeInteractive">
+              {`window.difyChatbotConfig = { token: '${difyToken}', isDev: false, inputs: {}, systemVariables: {}, userVariables: {} }`}
+            </Script>
+            <Script
+              src="https://udify.app/embed.min.js"
+              id={difyToken}
+              strategy="beforeInteractive"
+            />
+          </>
+        )}
+      </head>
       <body className={cn(
         "min-h-screen font-sans",
         inter.variable,

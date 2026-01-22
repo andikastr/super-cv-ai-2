@@ -11,6 +11,8 @@ import { useEffect, useState } from 'react';
 export function CustomCursor() {
     const [isHovering, setIsHovering] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const cursorX = useMotionValue(-100);
     const cursorY = useMotionValue(-100);
 
@@ -20,6 +22,13 @@ export function CustomCursor() {
     const cursorYSpring = useSpring(cursorY, springConfig);
 
     useEffect(() => {
+        setIsMounted(true);
+        // Check for touch device after mount (client-side only)
+        if ('ontouchstart' in window) {
+            setIsTouchDevice(true);
+            return;
+        }
+
         const moveCursor = (e: MouseEvent) => {
             cursorX.set(e.clientX);
             cursorY.set(e.clientY);
@@ -57,8 +66,9 @@ export function CustomCursor() {
         };
     }, [cursorX, cursorY]);
 
-    // Hide on touch devices
-    if (typeof window !== 'undefined' && 'ontouchstart' in window) {
+    // Don't render anything until mounted (prevents hydration mismatch)
+    // Also hide on touch devices
+    if (!isMounted || isTouchDevice) {
         return null;
     }
 
@@ -108,3 +118,4 @@ export function CustomCursor() {
         </>
     );
 }
+
